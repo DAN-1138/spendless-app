@@ -1,0 +1,454 @@
+
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>Utgifter</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans,system-ui);background:var(--color-background-tertiary,#f5f5f3);color:var(--color-text-primary,#1a1a1a);min-height:100vh;max-width:480px;margin:0 auto}
+.app{display:flex;flex-direction:column;min-height:100vh}
+.header{background:var(--color-background-primary,#fff);border-bottom:0.5px solid var(--color-border-tertiary,rgba(0,0,0,0.1));padding:1rem 1.25rem 0;position:sticky;top:0;z-index:10}
+.header h1{font-size:18px;font-weight:500;margin-bottom:1rem}
+.tabs{display:flex;gap:0}
+.tab{flex:1;text-align:center;padding:0.6rem 0;font-size:13px;cursor:pointer;border-bottom:2px solid transparent;color:var(--color-text-secondary,#666);transition:all 0.15s}
+.tab.active{color:var(--color-text-primary,#1a1a1a);border-bottom-color:var(--color-text-primary,#1a1a1a);font-weight:500}
+.view{display:none;flex:1;padding:1rem 1.25rem}
+.view.active{display:block}
+
+/* Add form */
+.form-group{margin-bottom:1rem}
+label{display:block;font-size:13px;color:var(--color-text-secondary,#666);margin-bottom:6px}
+select,input[type=text],input[type=number],textarea{width:100%;padding:10px 12px;border:0.5px solid var(--color-border-secondary,rgba(0,0,0,0.2));border-radius:var(--border-radius-md,8px);font-size:15px;background:var(--color-background-primary,#fff);color:var(--color-text-primary,#1a1a1a);font-family:inherit;appearance:none;-webkit-appearance:none}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--color-text-primary,#1a1a1a)}
+.btn{width:100%;padding:12px;border:0.5px solid var(--color-border-secondary,rgba(0,0,0,0.2));border-radius:var(--border-radius-md,8px);font-size:15px;font-weight:500;cursor:pointer;background:var(--color-background-primary,#fff);color:var(--color-text-primary,#1a1a1a);font-family:inherit;transition:background 0.1s}
+.btn:active{background:var(--color-background-secondary,#f0f0ee)}
+.btn-primary{background:var(--color-text-primary,#1a1a1a);color:var(--color-background-primary,#fff);border-color:var(--color-text-primary,#1a1a1a)}
+.btn-primary:active{opacity:0.85}
+.success-msg{display:none;background:var(--color-background-success,#eaf3de);color:var(--color-text-success,#3b6d11);padding:10px 12px;border-radius:var(--border-radius-md,8px);font-size:14px;margin-top:0.75rem;text-align:center}
+
+/* Transactions */
+.filter-row{display:flex;gap:8px;margin-bottom:1rem}
+.filter-row select{flex:1}
+.tx-list{display:flex;flex-direction:column;gap:8px}
+.tx-item{background:var(--color-background-primary,#fff);border:0.5px solid var(--color-border-tertiary,rgba(0,0,0,0.1));border-radius:var(--border-radius-lg,12px);padding:12px 14px;cursor:pointer;transition:border-color 0.1s}
+.tx-item:active{border-color:var(--color-border-primary,rgba(0,0,0,0.35))}
+.tx-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
+.tx-cats{font-size:13px;color:var(--color-text-secondary,#666)}
+.tx-amount{font-size:16px;font-weight:500}
+.tx-bottom{display:flex;justify-content:space-between;align-items:center}
+.tx-date{font-size:12px;color:var(--color-text-tertiary,#999)}
+.tx-comment{font-size:12px;color:var(--color-text-secondary,#666);font-style:italic;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx-area-badge{font-size:11px;padding:2px 8px;border-radius:100px;background:var(--color-background-secondary,#f0f0ee);color:var(--color-text-secondary,#666)}
+.empty{text-align:center;padding:3rem 0;color:var(--color-text-tertiary,#999);font-size:14px}
+
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:flex-end;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--color-background-primary,#fff);border-radius:var(--border-radius-xl,16px) var(--border-radius-xl,16px) 0 0;padding:1.25rem;width:100%;max-width:480px;max-height:85vh;overflow-y:auto}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem}
+.modal-header h2{font-size:16px;font-weight:500}
+.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--color-text-secondary,#666);padding:4px;line-height:1}
+.modal-actions{display:flex;gap:8px;margin-top:1rem}
+.modal-actions .btn{flex:1}
+.btn-danger{color:var(--color-text-danger,#a32d2d);border-color:var(--color-border-danger,rgba(163,45,45,0.3))}
+.btn-danger:active{background:var(--color-background-danger,#fcebeb)}
+
+/* Dashboard */
+.month-selector{margin-bottom:1rem}
+.month-selector select{width:100%}
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem}
+.stat-card{background:var(--color-background-secondary,#f0f0ee);border-radius:var(--border-radius-md,8px);padding:12px 14px}
+.stat-label{font-size:12px;color:var(--color-text-secondary,#666);margin-bottom:4px}
+.stat-value{font-size:20px;font-weight:500}
+.chart-card{background:var(--color-background-primary,#fff);border:0.5px solid var(--color-border-tertiary,rgba(0,0,0,0.1));border-radius:var(--border-radius-lg,12px);padding:14px;margin-bottom:1rem}
+.chart-title{font-size:13px;color:var(--color-text-secondary,#666);margin-bottom:12px}
+.chart-wrap{position:relative;height:200px}
+.loading{text-align:center;padding:2rem 0;color:var(--color-text-secondary,#666);font-size:14px}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>Utgifter</h1>
+    <div class="tabs">
+      <div class="tab active" data-view="add">Lägg till</div>
+      <div class="tab" data-view="transactions">Transaktioner</div>
+      <div class="tab" data-view="dashboard">Dashboard</div>
+    </div>
+  </div>
+
+  <!-- Add view -->
+  <div class="view active" id="view-add">
+    <div style="height:1rem"></div>
+    <div class="form-group">
+      <label>Område</label>
+      <select id="area-select">
+        <option value="">Välj område...</option>
+        <option>Barn</option>
+        <option>Personligt</option>
+        <option>Bil</option>
+        <option>Hushåll</option>
+        <option>Familj</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Kategori</label>
+      <select id="category-select" disabled>
+        <option value="">Välj kategori...</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Belopp (kr)</label>
+      <input type="number" id="amount-input" placeholder="0" inputmode="numeric">
+    </div>
+    <div class="form-group">
+      <label>Kommentar (valfritt)</label>
+      <input type="text" id="comment-input" placeholder="">
+    </div>
+    <button class="btn btn-primary" id="save-btn">Spara utgift</button>
+    <div class="success-msg" id="success-msg">Utgift sparad!</div>
+  </div>
+
+  <!-- Transactions view -->
+  <div class="view" id="view-transactions">
+    <div style="height:1rem"></div>
+    <div class="filter-row">
+      <select id="filter-area">
+        <option value="">Alla områden</option>
+        <option>Barn</option>
+        <option>Personligt</option>
+        <option>Bil</option>
+        <option>Hushåll</option>
+        <option>Familj</option>
+      </select>
+      <select id="filter-month">
+        <option value="">Alla månader</option>
+      </select>
+    </div>
+    <div class="tx-list" id="tx-list">
+      <div class="loading">Laddar...</div>
+    </div>
+  </div>
+
+  <!-- Dashboard view -->
+  <div class="view" id="view-dashboard">
+    <div style="height:1rem"></div>
+    <div class="month-selector">
+      <select id="dash-month">
+        <option value="">Alla månader</option>
+      </select>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-label">Totalt</div>
+        <div class="stat-value" id="stat-total">–</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Antal poster</div>
+        <div class="stat-value" id="stat-count">–</div>
+      </div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Per område</div>
+      <div class="chart-wrap"><canvas id="area-chart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Per kategori (topp 8)</div>
+      <div class="chart-wrap"><canvas id="cat-chart"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Per dag</div>
+      <div class="chart-wrap"><canvas id="day-chart"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>Redigera utgift</h2>
+      <button class="modal-close" id="modal-close">×</button>
+    </div>
+    <div class="form-group">
+      <label>Område</label>
+      <select id="edit-area"></select>
+    </div>
+    <div class="form-group">
+      <label>Kategori</label>
+      <select id="edit-category"></select>
+    </div>
+    <div class="form-group">
+      <label>Belopp (kr)</label>
+      <input type="number" id="edit-amount" inputmode="numeric">
+    </div>
+    <div class="form-group">
+      <label>Kommentar</label>
+      <input type="text" id="edit-comment">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-danger" id="delete-btn">Ta bort</button>
+      <button class="btn btn-primary" id="update-btn">Spara</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://lgmiwyaxbggugjlfyuhp.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_HlN1lDzM6qZIdo56Mu8Iag_OKxyW69l';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+const CATEGORIES = {
+  'Barn': ['Aktiviteter','Kläder','Nöjen','Hälsa','Mat'],
+  'Personligt': ['Lunch','Restaurant','Fika','Alkohol','Transport','Shopping','Resor','Hälsa/skönhet','Nöjen'],
+  'Bil': ['Parkering','Bensin','Service'],
+  'Hushåll': ['Mat','Underhåll'],
+  'Familj': ['Aktiviteter','Resor','Restaurant']
+};
+
+const COLORS = ['#1D9E75','#378ADD','#D85A30','#BA7517','#D4537E','#7F77DD','#639922','#E24B4A'];
+
+let allData = [];
+let areaChart, catChart, dayChart;
+let editingId = null;
+
+function fmt(n){return Math.round(n).toLocaleString('sv-SE')+' kr'}
+
+// Tabs
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('view-'+t.dataset.view).classList.add('active');
+    if(t.dataset.view==='transactions') renderTransactions();
+    if(t.dataset.view==='dashboard') renderDashboard();
+  });
+});
+
+// Area → category
+function populateCats(areaEl, catEl, selectedCat=''){
+  const area = areaEl.value;
+  catEl.innerHTML = '';
+  if(!area){catEl.disabled=true;return;}
+  catEl.disabled=false;
+  (CATEGORIES[area]||[]).forEach(c=>{
+    const o=document.createElement('option');
+    o.value=c;o.textContent=c;
+    if(c===selectedCat)o.selected=true;
+    catEl.appendChild(o);
+  });
+}
+
+document.getElementById('area-select').addEventListener('change',()=>{
+  populateCats(document.getElementById('area-select'),document.getElementById('category-select'));
+});
+
+// Save
+document.getElementById('save-btn').addEventListener('click',async()=>{
+  const area=document.getElementById('area-select').value;
+  const cat=document.getElementById('category-select').value;
+  const amt=parseInt(document.getElementById('amount-input').value);
+  const comment=document.getElementById('comment-input').value.trim();
+  if(!area||!cat||!amt){alert('Fyll i område, kategori och belopp.');return;}
+  const btn=document.getElementById('save-btn');
+  btn.textContent='Sparar...';btn.disabled=true;
+  const {error}=await sb.from('expenses').insert({date:new Date().toISOString(),area,category:cat,amount:amt,comment:comment||null});
+  btn.textContent='Spara utgift';btn.disabled=false;
+  if(error){alert('Fel: '+error.message);return;}
+  document.getElementById('amount-input').value='';
+  document.getElementById('comment-input').value='';
+  document.getElementById('area-select').value='';
+  document.getElementById('category-select').innerHTML='<option>Välj kategori...</option>';
+  document.getElementById('category-select').disabled=true;
+  const msg=document.getElementById('success-msg');
+  msg.style.display='block';
+  setTimeout(()=>msg.style.display='none',2500);
+  await loadData();
+});
+
+// Load data
+async function loadData(){
+  const {data,error}=await sb.from('expenses').select('*').order('date',{ascending:false});
+  if(error){console.error(error);return;}
+  allData=data||[];
+  populateMonthFilters();
+}
+
+function populateMonthFilters(){
+  const months=new Set();
+  allData.forEach(r=>{
+    const d=new Date(r.date);
+    months.add(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
+  });
+  const sorted=[...months].sort().reverse();
+  ['filter-month','dash-month'].forEach(id=>{
+    const sel=document.getElementById(id);
+    const cur=sel.value;
+    sel.innerHTML='<option value="">Alla månader</option>';
+    sorted.forEach(m=>{
+      const [y,mo]=m.split('-');
+      const label=new Date(y,mo-1).toLocaleString('sv-SE',{month:'long',year:'numeric'});
+      const o=document.createElement('option');
+      o.value=m;o.textContent=label.charAt(0).toUpperCase()+label.slice(1);
+      if(m===cur)o.selected=true;
+      sel.appendChild(o);
+    });
+  });
+}
+
+// Transactions
+function renderTransactions(){
+  const area=document.getElementById('filter-area').value;
+  const month=document.getElementById('filter-month').value;
+  let data=allData.filter(r=>{
+    if(area&&r.area!==area)return false;
+    if(month){
+      const d=new Date(r.date);
+      const m=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+      if(m!==month)return false;
+    }
+    return true;
+  });
+  const list=document.getElementById('tx-list');
+  if(!data.length){list.innerHTML='<div class="empty">Inga poster hittades</div>';return;}
+  list.innerHTML=data.map(r=>{
+    const d=new Date(r.date);
+    const dateStr=d.toLocaleDateString('sv-SE',{day:'numeric',month:'short'});
+    return `<div class="tx-item" data-id="${r.id}">
+      <div class="tx-top">
+        <div>
+          <span class="tx-area-badge">${r.area}</span>
+          <div class="tx-cats" style="margin-top:4px">${r.category}</div>
+        </div>
+        <div class="tx-amount">${fmt(r.amount)}</div>
+      </div>
+      <div class="tx-bottom">
+        <div class="tx-date">${dateStr}</div>
+        <div class="tx-comment">${r.comment||''}</div>
+      </div>
+    </div>`;
+  }).join('');
+  list.querySelectorAll('.tx-item').forEach(el=>{
+    el.addEventListener('click',()=>openEdit(el.dataset.id));
+  });
+}
+
+document.getElementById('filter-area').addEventListener('change',renderTransactions);
+document.getElementById('filter-month').addEventListener('change',renderTransactions);
+
+// Edit modal
+function openEdit(id){
+  const r=allData.find(x=>x.id===id);
+  if(!r)return;
+  editingId=id;
+  const areaEl=document.getElementById('edit-area');
+  const catEl=document.getElementById('edit-category');
+  areaEl.innerHTML=Object.keys(CATEGORIES).map(a=>`<option${a===r.area?' selected':''}>${a}</option>`).join('');
+  populateCats(areaEl,catEl,r.category);
+  document.getElementById('edit-amount').value=r.amount;
+  document.getElementById('edit-comment').value=r.comment||'';
+  document.getElementById('modal').classList.add('open');
+}
+
+document.getElementById('edit-area').addEventListener('change',()=>{
+  populateCats(document.getElementById('edit-area'),document.getElementById('edit-category'));
+});
+
+document.getElementById('modal-close').addEventListener('click',()=>{
+  document.getElementById('modal').classList.remove('open');
+});
+
+document.getElementById('modal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('modal'))document.getElementById('modal').classList.remove('open');
+});
+
+document.getElementById('update-btn').addEventListener('click',async()=>{
+  const area=document.getElementById('edit-area').value;
+  const cat=document.getElementById('edit-category').value;
+  const amt=parseInt(document.getElementById('edit-amount').value);
+  const comment=document.getElementById('edit-comment').value.trim();
+  if(!area||!cat||!amt)return;
+  const {error}=await sb.from('expenses').update({area,category:cat,amount:amt,comment:comment||null}).eq('id',editingId);
+  if(error){alert('Fel: '+error.message);return;}
+  document.getElementById('modal').classList.remove('open');
+  await loadData();
+  renderTransactions();
+});
+
+document.getElementById('delete-btn').addEventListener('click',async()=>{
+  if(!confirm('Ta bort denna post?'))return;
+  const {error}=await sb.from('expenses').delete().eq('id',editingId);
+  if(error){alert('Fel: '+error.message);return;}
+  document.getElementById('modal').classList.remove('open');
+  await loadData();
+  renderTransactions();
+});
+
+// Dashboard
+function getFilteredData(){
+  const month=document.getElementById('dash-month').value;
+  if(!month)return allData;
+  return allData.filter(r=>{
+    const d=new Date(r.date);
+    const m=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    return m===month;
+  });
+}
+
+function renderDashboard(){
+  const data=getFilteredData();
+  const total=data.reduce((s,r)=>s+r.amount,0);
+  document.getElementById('stat-total').textContent=fmt(total);
+  document.getElementById('stat-count').textContent=data.length;
+
+  // Area chart
+  const areaMap={};
+  data.forEach(r=>areaMap[r.area]=(areaMap[r.area]||0)+r.amount);
+  const areaLabels=Object.keys(areaMap);
+  const areaVals=areaLabels.map(k=>areaMap[k]);
+  if(areaChart)areaChart.destroy();
+  areaChart=new Chart(document.getElementById('area-chart'),{
+    type:'bar',
+    data:{labels:areaLabels,datasets:[{data:areaVals,backgroundColor:COLORS,borderRadius:6,borderWidth:0}]},
+    options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:v=>Math.round(v).toLocaleString('sv-SE')}}},responsive:true,maintainAspectRatio:false}
+  });
+
+  // Category chart
+  const catMap={};
+  data.forEach(r=>catMap[r.category]=(catMap[r.category]||0)+r.amount);
+  const catSorted=Object.entries(catMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  if(catChart)catChart.destroy();
+  catChart=new Chart(document.getElementById('cat-chart'),{
+    type:'bar',
+    data:{labels:catSorted.map(x=>x[0]),datasets:[{data:catSorted.map(x=>x[1]),backgroundColor:COLORS,borderRadius:6,borderWidth:0}]},
+    options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:v=>Math.round(v).toLocaleString('sv-SE')}},y:{grid:{display:false}}},responsive:true,maintainAspectRatio:false}
+  });
+
+  // Day chart
+  const dayMap={};
+  data.forEach(r=>{
+    const d=new Date(r.date).toLocaleDateString('sv-SE',{month:'short',day:'numeric'});
+    dayMap[d]=(dayMap[d]||0)+r.amount;
+  });
+  const daySorted=Object.entries(dayMap).sort((a,b)=>new Date(a[0])-new Date(b[0]));
+  if(dayChart)dayChart.destroy();
+  dayChart=new Chart(document.getElementById('day-chart'),{
+    type:'line',
+    data:{labels:daySorted.map(x=>x[0]),datasets:[{data:daySorted.map(x=>x[1]),borderColor:COLORS[0],backgroundColor:COLORS[0]+'22',fill:true,tension:0.3,pointRadius:3,borderWidth:2}]},
+    options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:8}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:v=>Math.round(v).toLocaleString('sv-SE')}}},responsive:true,maintainAspectRatio:false}
+  });
+}
+
+document.getElementById('dash-month').addEventListener('change',renderDashboard);
+
+loadData();
+</script>
+</body>
+</html>
