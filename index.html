@@ -1,200 +1,319 @@
-
 <!DOCTYPE html>
 <html lang="sv">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<title>Utgifter</title>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Spendless">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>Spendless</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:var(--font-sans,system-ui);background:var(--color-background-tertiary,#f5f5f3);color:var(--color-text-primary,#1a1a1a);min-height:100vh;max-width:480px;margin:0 auto}
-.app{display:flex;flex-direction:column;min-height:100vh}
-.header{background:var(--color-background-primary,#fff);border-bottom:0.5px solid var(--color-border-tertiary,rgba(0,0,0,0.1));padding:1rem 1.25rem 0;position:sticky;top:0;z-index:10}
-.header h1{font-size:18px;font-weight:500;margin-bottom:1rem}
-.tabs{display:flex;gap:0}
-.tab{flex:1;text-align:center;padding:0.6rem 0;font-size:13px;cursor:pointer;border-bottom:2px solid transparent;color:var(--color-text-secondary,#666);transition:all 0.15s}
-.tab.active{color:var(--color-text-primary,#1a1a1a);border-bottom-color:var(--color-text-primary,#1a1a1a);font-weight:500}
-.view{display:none;flex:1;padding:1rem 1.25rem}
-.view.active{display:block}
+:root {
+  --bg0: #0a0a0a;
+  --bg1: #111111;
+  --bg2: #1a1a1a;
+  --bg3: #222222;
+  --border: rgba(255,255,255,0.08);
+  --border-mid: rgba(255,255,255,0.14);
+  --text0: #f0f0f0;
+  --text1: #a0a0a0;
+  --text2: #555555;
+  --accent: #c8f060;
+  --accent-dim: rgba(200,240,96,0.12);
+  --red: #ff5f57;
+  --nav-h: 72px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; background: var(--bg0); color: var(--text0); font-family: 'DM Sans', system-ui, sans-serif; overscroll-behavior: none; }
+body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; position: relative; }
 
-/* Add form */
-.form-group{margin-bottom:1rem}
-label{display:block;font-size:13px;color:var(--color-text-secondary,#666);margin-bottom:6px}
-select,input[type=text],input[type=number],textarea{width:100%;padding:10px 12px;border:0.5px solid var(--color-border-secondary,rgba(0,0,0,0.2));border-radius:var(--border-radius-md,8px);font-size:15px;background:var(--color-background-primary,#fff);color:var(--color-text-primary,#1a1a1a);font-family:inherit;appearance:none;-webkit-appearance:none}
-select:focus,input:focus,textarea:focus{outline:none;border-color:var(--color-text-primary,#1a1a1a)}
-.btn{width:100%;padding:12px;border:0.5px solid var(--color-border-secondary,rgba(0,0,0,0.2));border-radius:var(--border-radius-md,8px);font-size:15px;font-weight:500;cursor:pointer;background:var(--color-background-primary,#fff);color:var(--color-text-primary,#1a1a1a);font-family:inherit;transition:background 0.1s}
-.btn:active{background:var(--color-background-secondary,#f0f0ee)}
-.btn-primary{background:var(--color-text-primary,#1a1a1a);color:var(--color-background-primary,#fff);border-color:var(--color-text-primary,#1a1a1a)}
-.btn-primary:active{opacity:0.85}
-.success-msg{display:none;background:var(--color-background-success,#eaf3de);color:var(--color-text-success,#3b6d11);padding:10px 12px;border-radius:var(--border-radius-md,8px);font-size:14px;margin-top:0.75rem;text-align:center}
+/* SCROLLABLE CONTENT */
+.content { flex: 1; overflow-y: auto; padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 1rem); -webkit-overflow-scrolling: touch; }
 
-/* Transactions */
-.filter-row{display:flex;gap:8px;margin-bottom:1rem}
-.filter-row select{flex:1}
-.tx-list{display:flex;flex-direction:column;gap:8px}
-.tx-item{background:var(--color-background-primary,#fff);border:0.5px solid var(--color-border-tertiary,rgba(0,0,0,0.1));border-radius:var(--border-radius-lg,12px);padding:12px 14px;cursor:pointer;transition:border-color 0.1s}
-.tx-item:active{border-color:var(--color-border-primary,rgba(0,0,0,0.35))}
-.tx-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px}
-.tx-cats{font-size:13px;color:var(--color-text-secondary,#666)}
-.tx-amount{font-size:16px;font-weight:500}
-.tx-bottom{display:flex;justify-content:space-between;align-items:center}
-.tx-date{font-size:12px;color:var(--color-text-tertiary,#999)}
-.tx-comment{font-size:12px;color:var(--color-text-secondary,#666);font-style:italic;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tx-area-badge{font-size:11px;padding:2px 8px;border-radius:100px;background:var(--color-background-secondary,#f0f0ee);color:var(--color-text-secondary,#666)}
-.empty{text-align:center;padding:3rem 0;color:var(--color-text-tertiary,#999);font-size:14px}
+/* VIEWS */
+.view { display: none; padding: 0 1rem; }
+.view.active { display: block; }
 
-/* Modal */
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:flex-end;justify-content:center}
-.modal-overlay.open{display:flex}
-.modal{background:var(--color-background-primary,#fff);border-radius:var(--border-radius-xl,16px) var(--border-radius-xl,16px) 0 0;padding:1.25rem;width:100%;max-width:480px;max-height:85vh;overflow-y:auto}
-.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem}
-.modal-header h2{font-size:16px;font-weight:500}
-.modal-close{background:none;border:none;font-size:20px;cursor:pointer;color:var(--color-text-secondary,#666);padding:4px;line-height:1}
-.modal-actions{display:flex;gap:8px;margin-top:1rem}
-.modal-actions .btn{flex:1}
-.btn-danger{color:var(--color-text-danger,#a32d2d);border-color:var(--color-border-danger,rgba(163,45,45,0.3))}
-.btn-danger:active{background:var(--color-background-danger,#fcebeb)}
+/* TOP BAR */
+.topbar { padding: 1rem 1rem 0.5rem; display: flex; align-items: flex-end; justify-content: space-between; }
+.topbar-title { font-size: 22px; font-weight: 500; letter-spacing: -0.5px; }
+.topbar-sub { font-size: 13px; color: var(--text1); font-family: 'DM Mono', monospace; }
 
-/* Dashboard */
-.month-selector{margin-bottom:1rem}
-.month-selector select{width:100%}
-.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem}
-.stat-card{background:var(--color-background-secondary,#f0f0ee);border-radius:var(--border-radius-md,8px);padding:12px 14px}
-.stat-label{font-size:12px;color:var(--color-text-secondary,#666);margin-bottom:4px}
-.stat-value{font-size:20px;font-weight:500}
-.chart-card{background:var(--color-background-primary,#fff);border:0.5px solid var(--color-border-tertiary,rgba(0,0,0,0.1));border-radius:var(--border-radius-lg,12px);padding:14px;margin-bottom:1rem}
-.chart-title{font-size:13px;color:var(--color-text-secondary,#666);margin-bottom:12px}
-.chart-wrap{position:relative;height:200px}
-.loading{text-align:center;padding:2rem 0;color:var(--color-text-secondary,#666);font-size:14px}
+/* BOTTOM NAV */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 100%; max-width: 430px;
+  background: rgba(10,10,10,0.92);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-top: 0.5px solid var(--border);
+  display: flex;
+  padding-bottom: var(--safe-bottom);
+  z-index: 100;
+}
+.nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px 0 10px; gap: 4px; cursor: pointer; }
+.nav-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+.nav-icon svg { width: 22px; height: 22px; stroke: var(--text2); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.15s; }
+.nav-label { font-size: 10px; color: var(--text2); letter-spacing: 0.3px; transition: color 0.15s; }
+.nav-item.active .nav-icon svg { stroke: var(--accent); }
+.nav-item.active .nav-label { color: var(--accent); }
+
+/* ADD BUTTON in nav */
+.nav-add { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 8px 0 10px; gap: 4px; cursor: pointer; }
+.nav-add-circle { width: 40px; height: 40px; background: var(--accent); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: transform 0.1s, opacity 0.1s; }
+.nav-add-circle:active { transform: scale(0.93); opacity: 0.85; }
+.nav-add-circle svg { width: 20px; height: 20px; stroke: #0a0a0a; fill: none; stroke-width: 2.5; stroke-linecap: round; }
+.nav-add .nav-label { font-size: 10px; color: var(--text2); letter-spacing: 0.3px; }
+
+/* SECTION */
+.section { margin-bottom: 1rem; }
+.section-label { font-size: 11px; color: var(--text2); letter-spacing: 0.8px; text-transform: uppercase; font-family: 'DM Mono', monospace; padding: 0 0 0.5rem; }
+
+/* CARDS */
+.card { background: var(--bg1); border: 0.5px solid var(--border); border-radius: 16px; padding: 1rem 1.25rem; margin-bottom: 0.5rem; }
+.card-sm { padding: 0.75rem 1rem; }
+
+/* STAT HERO */
+.stat-hero { padding: 1.5rem 1rem 1rem; }
+.stat-hero-label { font-size: 12px; color: var(--text1); letter-spacing: 0.5px; margin-bottom: 6px; font-family: 'DM Mono', monospace; }
+.stat-hero-value { font-size: 42px; font-weight: 300; letter-spacing: -2px; color: var(--text0); line-height: 1; }
+.stat-hero-value span { font-size: 20px; color: var(--text1); font-weight: 300; }
+
+/* MONTH NAV */
+.month-nav { display: flex; align-items: center; justify-content: center; gap: 0; padding: 0.25rem 1rem 0.5rem; }
+.month-nav-btn { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; transition: background 0.1s; background: none; border: none; }
+.month-nav-btn:active { background: var(--bg2); }
+.month-nav-btn svg { width: 18px; height: 18px; stroke: var(--text1); fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.month-nav-label { flex: 1; text-align: center; font-size: 17px; font-weight: 500; letter-spacing: -0.3px; color: var(--text0); }
+
+/* CHART */
+.chart-wrap { position: relative; }
+.chart-title { font-size: 12px; color: var(--text1); margin-bottom: 0.75rem; font-family: 'DM Mono', monospace; letter-spacing: 0.5px; }
+
+/* AREA BARS */
+.area-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.area-bar-label { font-size: 13px; color: var(--text1); width: 72px; flex-shrink: 0; }
+.area-bar-track { flex: 1; height: 6px; background: var(--bg3); border-radius: 100px; overflow: hidden; }
+.area-bar-fill { height: 100%; border-radius: 100px; transition: width 0.6s cubic-bezier(0.16,1,0.3,1); }
+.area-bar-amount { font-size: 12px; color: var(--text1); font-family: 'DM Mono', monospace; width: 64px; text-align: right; flex-shrink: 0; }
+
+/* PIE */
+.pie-wrap { display: flex; gap: 1.25rem; align-items: center; }
+.pie-canvas-wrap { width: 140px; height: 140px; flex-shrink: 0; position: relative; }
+.pie-legend { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.pie-legend-item { display: flex; align-items: center; gap: 8px; }
+.pie-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.pie-legend-label { font-size: 13px; color: var(--text1); flex: 1; }
+.pie-legend-pct { font-size: 12px; color: var(--text0); font-family: 'DM Mono', monospace; }
+
+/* CATEGORY BARS */
+.cat-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+.cat-bar-label { font-size: 12px; color: var(--text1); width: 110px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cat-bar-track { flex: 1; height: 5px; background: var(--bg3); border-radius: 100px; overflow: hidden; }
+.cat-bar-fill { height: 100%; border-radius: 100px; transition: width 0.6s cubic-bezier(0.16,1,0.3,1); }
+.cat-bar-amount { font-size: 11px; color: var(--text2); font-family: 'DM Mono', monospace; width: 52px; text-align: right; flex-shrink: 0; }
+
+/* AREA SECTION HEADER */
+.area-section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; }
+.area-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.area-section-title { font-size: 14px; font-weight: 500; }
+.area-section-total { font-size: 12px; color: var(--text1); font-family: 'DM Mono', monospace; margin-left: auto; }
+
+/* TRANSACTIONS */
+.tx-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 0.5px solid var(--border); cursor: pointer; }
+.tx-item:last-child { border-bottom: none; }
+.tx-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.tx-main { flex: 1; min-width: 0; }
+.tx-cat { font-size: 14px; color: var(--text0); }
+.tx-meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
+.tx-comment { font-size: 12px; color: var(--text1); font-style: italic; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tx-right { text-align: right; flex-shrink: 0; }
+.tx-amount { font-size: 15px; font-family: 'DM Mono', monospace; color: var(--text0); }
+.tx-date { font-size: 11px; color: var(--text2); margin-top: 2px; font-family: 'DM Mono', monospace; }
+
+/* FILTER */
+.filter-row { display: flex; gap: 6px; margin-bottom: 0.75rem; }
+.filter-row select { flex: 1; background: var(--bg1); border: 0.5px solid var(--border); border-radius: 10px; color: var(--text0); font-size: 13px; padding: 8px 10px; font-family: 'DM Sans', sans-serif; appearance: none; -webkit-appearance: none; }
+
+/* ADD FORM */
+.form-view { padding: 0 1rem; }
+.form-label { font-size: 11px; color: var(--text2); letter-spacing: 0.8px; text-transform: uppercase; font-family: 'DM Mono', monospace; margin-bottom: 8px; display: block; }
+.form-group { margin-bottom: 1.25rem; }
+.form-input { width: 100%; background: var(--bg1); border: 0.5px solid var(--border); border-radius: 12px; color: var(--text0); font-size: 16px; padding: 14px 16px; font-family: 'DM Sans', sans-serif; appearance: none; -webkit-appearance: none; transition: border-color 0.15s; }
+.form-input:focus { outline: none; border-color: var(--border-mid); }
+.form-input::placeholder { color: var(--text2); }
+select.form-input option { background: #1a1a1a; }
+
+/* AREA CHIPS */
+.area-chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.area-chip { padding: 8px 16px; border-radius: 100px; border: 0.5px solid var(--border); background: var(--bg1); font-size: 14px; color: var(--text1); cursor: pointer; transition: all 0.15s; }
+.area-chip.selected { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+/* CAT CHIPS */
+.cat-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.cat-chip { padding: 7px 14px; border-radius: 100px; border: 0.5px solid var(--border); background: var(--bg1); font-size: 13px; color: var(--text1); cursor: pointer; transition: all 0.15s; }
+.cat-chip.selected { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+/* AMOUNT INPUT */
+.amount-big { width: 100%; background: transparent; border: none; border-bottom: 1px solid var(--border-mid); color: var(--text0); font-size: 36px; font-family: 'DM Mono', monospace; font-weight: 400; padding: 8px 0; letter-spacing: -1px; }
+.amount-big:focus { outline: none; border-bottom-color: var(--accent); }
+.amount-big::placeholder { color: var(--text2); }
+
+/* SAVE BTN */
+.save-btn { width: 100%; padding: 16px; background: var(--accent); color: #0a0a0a; border: none; border-radius: 14px; font-size: 16px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; letter-spacing: 0.2px; transition: opacity 0.1s, transform 0.1s; margin-top: 0.5rem; }
+.save-btn:active { opacity: 0.85; transform: scale(0.99); }
+.save-btn:disabled { opacity: 0.3; }
+
+/* TOAST */
+.toast { position: fixed; top: 1rem; left: 50%; transform: translateX(-50%) translateY(-80px); background: var(--accent); color: #0a0a0a; padding: 10px 20px; border-radius: 100px; font-size: 14px; font-weight: 500; z-index: 200; transition: transform 0.3s cubic-bezier(0.16,1,0.3,1); white-space: nowrap; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* MODAL */
+.modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 150; align-items: flex-end; justify-content: center; }
+.modal-overlay.open { display: flex; }
+.modal { background: var(--bg1); border-radius: 20px 20px 0 0; border-top: 0.5px solid var(--border); padding: 1.25rem 1.25rem calc(1.25rem + var(--safe-bottom)); width: 100%; max-width: 430px; max-height: 85vh; overflow-y: auto; }
+.modal-handle { width: 36px; height: 4px; background: var(--bg3); border-radius: 100px; margin: 0 auto 1.25rem; }
+.modal-title { font-size: 16px; font-weight: 500; margin-bottom: 1.25rem; }
+.modal-actions { display: flex; gap: 8px; margin-top: 1rem; }
+.modal-actions .btn { flex: 1; padding: 13px; border-radius: 12px; font-size: 15px; font-weight: 500; cursor: pointer; font-family: 'DM Sans', sans-serif; border: 0.5px solid var(--border); background: var(--bg2); color: var(--text0); transition: opacity 0.1s; }
+.modal-actions .btn:active { opacity: 0.7; }
+.modal-actions .btn-del { color: var(--red); border-color: rgba(255,95,87,0.2); background: rgba(255,95,87,0.08); }
+.modal-actions .btn-save { background: var(--accent); color: #0a0a0a; border-color: var(--accent); }
+.modal .form-group { margin-bottom: 1rem; }
+.modal select, .modal input { width: 100%; background: var(--bg2); border: 0.5px solid var(--border); border-radius: 10px; color: var(--text0); font-size: 15px; padding: 12px 14px; font-family: 'DM Sans', sans-serif; appearance: none; -webkit-appearance: none; }
+.modal select option { background: #1a1a1a; }
+.modal label { font-size: 11px; color: var(--text2); letter-spacing: 0.8px; text-transform: uppercase; font-family: 'DM Mono', monospace; margin-bottom: 6px; display: block; }
+
+.empty { text-align: center; padding: 3rem 0; color: var(--text2); font-size: 14px; }
+.loading { text-align: center; padding: 2rem 0; color: var(--text2); font-size: 13px; font-family: 'DM Mono', monospace; }
 </style>
 </head>
 <body>
-<div class="app">
-  <div class="header">
-    <h1>Utgifter</h1>
-    <div class="tabs">
-      <div class="tab active" data-view="add">Lägg till</div>
-      <div class="tab" data-view="transactions">Transaktioner</div>
-      <div class="tab" data-view="dashboard">Dashboard</div>
-    </div>
-  </div>
 
-  <!-- Add view -->
-  <div class="view active" id="view-add">
-    <div style="height:1rem"></div>
-    <div class="form-group">
-      <label>Område</label>
-      <select id="area-select">
-        <option value="">Välj område...</option>
-        <option>Barn</option>
-        <option>Personligt</option>
-        <option>Bil</option>
-        <option>Hushåll</option>
-        <option>Familj</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Kategori</label>
-      <select id="category-select" disabled>
-        <option value="">Välj kategori...</option>
-      </select>
-    </div>
-    <div class="form-group">
-      <label>Belopp (kr)</label>
-      <input type="number" id="amount-input" placeholder="0" inputmode="numeric">
-    </div>
-    <div class="form-group">
-      <label>Kommentar (valfritt)</label>
-      <input type="text" id="comment-input" placeholder="">
-    </div>
-    <button class="btn btn-primary" id="save-btn">Spara utgift</button>
-    <div class="success-msg" id="success-msg">Utgift sparad!</div>
-  </div>
+<div class="content" id="content">
 
-  <!-- Transactions view -->
-  <div class="view" id="view-transactions">
-    <div style="height:1rem"></div>
-    <div class="filter-row">
-      <select id="filter-area">
-        <option value="">Alla områden</option>
-        <option>Barn</option>
-        <option>Personligt</option>
-        <option>Bil</option>
-        <option>Hushåll</option>
-        <option>Familj</option>
-      </select>
-      <select id="filter-month">
-        <option value="">Alla månader</option>
-      </select>
+  <!-- DASHBOARD -->
+  <div class="view active" id="view-dashboard">
+    <div class="topbar">
+      <div class="topbar-title">Spendless</div>
     </div>
-    <div class="tx-list" id="tx-list">
+
+    <div class="month-nav">
+      <button class="month-nav-btn" id="month-prev"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <div class="month-nav-label" id="month-nav-label">—</div>
+      <button class="month-nav-btn" id="month-next"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+
+    <div class="stat-hero">
+      <div class="stat-hero-label">TOTALT DENNA PERIOD</div>
+      <div class="stat-hero-value" id="stat-total">— <span>kr</span></div>
+    </div>
+
+    <div style="padding: 0 1rem;" id="dash-content">
       <div class="loading">Laddar...</div>
     </div>
   </div>
 
-  <!-- Dashboard view -->
-  <div class="view" id="view-dashboard">
-    <div style="height:1rem"></div>
-    <div class="month-selector">
-      <select id="dash-month">
-        <option value="">Alla månader</option>
-      </select>
+  <!-- TRANSACTIONS -->
+  <div class="view" id="view-transactions">
+    <div class="topbar">
+      <div class="topbar-title">Transaktioner</div>
     </div>
-    <div class="stat-grid">
-      <div class="stat-card">
-        <div class="stat-label">Totalt</div>
-        <div class="stat-value" id="stat-total">–</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Antal poster</div>
-        <div class="stat-value" id="stat-count">–</div>
+    <div style="padding: 0.75rem 1rem 0;">
+      <div class="filter-row">
+        <select id="filter-area">
+          <option value="">Alla områden</option>
+          <option>Barn</option><option>Personligt</option><option>Bil</option><option>Hushåll</option><option>Familj</option>
+        </select>
+        <select id="filter-month-tx">
+          <option value="">Alla månader</option>
+        </select>
       </div>
     </div>
-    <div class="chart-card">
-      <div class="chart-title">Per område</div>
-      <div class="chart-wrap"><canvas id="area-chart"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Per kategori (topp 8)</div>
-      <div class="chart-wrap"><canvas id="cat-chart"></canvas></div>
-    </div>
-    <div class="chart-card">
-      <div class="chart-title">Per dag</div>
-      <div class="chart-wrap"><canvas id="day-chart"></canvas></div>
+    <div style="padding: 0 1rem;">
+      <div id="tx-list"><div class="loading">Laddar...</div></div>
     </div>
   </div>
+
+  <!-- ADD -->
+  <div class="view form-view" id="view-add">
+    <div class="topbar" style="margin-bottom: 1.5rem;">
+      <div class="topbar-title">Ny utgift</div>
+    </div>
+
+    <div class="form-group">
+      <span class="form-label">Område</span>
+      <div class="area-chips" id="area-chips">
+        <div class="area-chip" data-area="Barn">Barn</div>
+        <div class="area-chip" data-area="Personligt">Personligt</div>
+        <div class="area-chip" data-area="Bil">Bil</div>
+        <div class="area-chip" data-area="Hushåll">Hushåll</div>
+        <div class="area-chip" data-area="Familj">Familj</div>
+      </div>
+    </div>
+
+    <div class="form-group" id="cat-group" style="display:none;">
+      <span class="form-label">Kategori</span>
+      <div class="cat-chips" id="cat-chips"></div>
+    </div>
+
+    <div class="form-group">
+      <span class="form-label">Belopp</span>
+      <input type="number" class="amount-big" id="amount-input" placeholder="0" inputmode="numeric">
+    </div>
+
+    <div class="form-group">
+      <span class="form-label">Kommentar</span>
+      <input type="text" class="form-input" id="comment-input" placeholder="Valfritt...">
+    </div>
+
+    <button class="save-btn" id="save-btn" disabled>Spara utgift</button>
+  </div>
+
 </div>
 
-<!-- Edit modal -->
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <div class="nav-item active" data-view="dashboard">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+    </div>
+    <div class="nav-label">Dashboard</div>
+  </div>
+  <div class="nav-item" data-view="transactions">
+    <div class="nav-icon">
+      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+    </div>
+    <div class="nav-label">Transaktioner</div>
+  </div>
+  <div class="nav-add" id="nav-add">
+    <div class="nav-add-circle">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+    <div class="nav-label">Ny utgift</div>
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div class="toast" id="toast">Utgift sparad!</div>
+
+<!-- EDIT MODAL -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
-    <div class="modal-header">
-      <h2>Redigera utgift</h2>
-      <button class="modal-close" id="modal-close">×</button>
-    </div>
-    <div class="form-group">
-      <label>Område</label>
-      <select id="edit-area"></select>
-    </div>
-    <div class="form-group">
-      <label>Kategori</label>
-      <select id="edit-category"></select>
-    </div>
-    <div class="form-group">
-      <label>Belopp (kr)</label>
-      <input type="number" id="edit-amount" inputmode="numeric">
-    </div>
-    <div class="form-group">
-      <label>Kommentar</label>
-      <input type="text" id="edit-comment">
-    </div>
+    <div class="modal-handle"></div>
+    <div class="modal-title">Redigera utgift</div>
+    <div class="form-group"><label>Område</label><select id="edit-area"></select></div>
+    <div class="form-group"><label>Kategori</label><select id="edit-category"></select></div>
+    <div class="form-group"><label>Belopp (kr)</label><input type="number" id="edit-amount" inputmode="numeric"></div>
+    <div class="form-group"><label>Kommentar</label><input type="text" id="edit-comment"></div>
     <div class="modal-actions">
-      <button class="btn btn-danger" id="delete-btn">Ta bort</button>
-      <button class="btn btn-primary" id="update-btn">Spara</button>
+      <button class="btn btn-del" id="delete-btn">Ta bort</button>
+      <button class="btn btn-save" id="update-btn">Spara</button>
     </div>
   </div>
 </div>
@@ -204,6 +323,7 @@ const SUPABASE_URL = 'https://lgmiwyaxbggugjlfyuhp.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_HlN1lDzM6qZIdo56Mu8Iag_OKxyW69l';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+const AREAS = ['Barn','Personligt','Bil','Hushåll','Familj'];
 const CATEGORIES = {
   'Barn': ['Aktiviteter','Kläder','Nöjen','Hälsa','Mat'],
   'Personligt': ['Lunch','Restaurant','Fika','Alkohol','Transport','Shopping','Resor','Hälsa/skönhet','Nöjen'],
@@ -211,242 +331,417 @@ const CATEGORIES = {
   'Hushåll': ['Mat','Underhåll'],
   'Familj': ['Aktiviteter','Resor','Restaurant']
 };
-
-const COLORS = ['#1D9E75','#378ADD','#D85A30','#BA7517','#D4537E','#7F77DD','#639922','#E24B4A'];
+const AREA_COLORS = {
+  'Barn': '#c8f060',
+  'Personligt': '#60c8f0',
+  'Bil': '#f0a060',
+  'Hushåll': '#a060f0',
+  'Familj': '#f060a0'
+};
 
 let allData = [];
-let areaChart, catChart, dayChart;
+let selectedMonth = '';
+let selectedArea = '';
+let selectedCategory = '';
 let editingId = null;
 
-function fmt(n){return Math.round(n).toLocaleString('sv-SE')+' kr'}
+function fmt(n) { return Math.round(n).toLocaleString('sv-SE'); }
 
-// Tabs
-document.querySelectorAll('.tab').forEach(t=>{
-  t.addEventListener('click',()=>{
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
-    t.classList.add('active');
-    document.getElementById('view-'+t.dataset.view).classList.add('active');
-    if(t.dataset.view==='transactions') renderTransactions();
-    if(t.dataset.view==='dashboard') renderDashboard();
+// NAV
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => {
+    const view = item.dataset.view;
+    switchView(view);
+    document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+    item.classList.add('active');
   });
 });
 
-// Area → category
-function populateCats(areaEl, catEl, selectedCat=''){
-  const area = areaEl.value;
-  catEl.innerHTML = '';
-  if(!area){catEl.disabled=true;return;}
-  catEl.disabled=false;
-  (CATEGORIES[area]||[]).forEach(c=>{
-    const o=document.createElement('option');
-    o.value=c;o.textContent=c;
-    if(c===selectedCat)o.selected=true;
-    catEl.appendChild(o);
+document.getElementById('nav-add').addEventListener('click', () => {
+  switchView('add');
+  document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+});
+
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + name).classList.add('active');
+  document.getElementById('content').scrollTop = 0;
+  if (name === 'transactions') renderTransactions();
+  if (name === 'dashboard') renderDashboard();
+}
+
+let sortedMonths = [];
+let monthIndex = 0;
+
+function buildMonthNav() {
+  const months = new Set();
+  allData.forEach(r => {
+    const d = new Date(r.date);
+    months.add(d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'));
+  });
+  sortedMonths = [...months].sort(); // oldest first
+
+  // default to current month
+  const now = new Date();
+  const curKey = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+  if (!selectedMonth || !sortedMonths.includes(selectedMonth)) {
+    selectedMonth = sortedMonths.includes(curKey) ? curKey : (sortedMonths[sortedMonths.length-1] || '');
+  }
+  monthIndex = sortedMonths.indexOf(selectedMonth);
+
+  updateMonthNavUI();
+
+  // tx filter
+  const txSel = document.getElementById('filter-month-tx');
+  const cur = txSel.value;
+  txSel.innerHTML = '<option value="">Alla månader</option>';
+  [...sortedMonths].reverse().forEach(m => {
+    const [y, mo] = m.split('-');
+    const label = new Date(y, mo-1).toLocaleString('sv-SE', {month:'long', year:'numeric'});
+    const o = document.createElement('option');
+    o.value = m; o.textContent = label.charAt(0).toUpperCase() + label.slice(1);
+    if (m === cur) o.selected = true;
+    txSel.appendChild(o);
   });
 }
 
-document.getElementById('area-select').addEventListener('change',()=>{
-  populateCats(document.getElementById('area-select'),document.getElementById('category-select'));
-});
-
-// Save
-document.getElementById('save-btn').addEventListener('click',async()=>{
-  const area=document.getElementById('area-select').value;
-  const cat=document.getElementById('category-select').value;
-  const amt=parseInt(document.getElementById('amount-input').value);
-  const comment=document.getElementById('comment-input').value.trim();
-  if(!area||!cat||!amt){alert('Fyll i område, kategori och belopp.');return;}
-  const btn=document.getElementById('save-btn');
-  btn.textContent='Sparar...';btn.disabled=true;
-  const {error}=await sb.from('expenses').insert({date:new Date().toISOString(),area,category:cat,amount:amt,comment:comment||null});
-  btn.textContent='Spara utgift';btn.disabled=false;
-  if(error){alert('Fel: '+error.message);return;}
-  document.getElementById('amount-input').value='';
-  document.getElementById('comment-input').value='';
-  document.getElementById('area-select').value='';
-  document.getElementById('category-select').innerHTML='<option>Välj kategori...</option>';
-  document.getElementById('category-select').disabled=true;
-  const msg=document.getElementById('success-msg');
-  msg.style.display='block';
-  setTimeout(()=>msg.style.display='none',2500);
-  await loadData();
-});
-
-// Load data
-async function loadData(){
-  const {data,error}=await sb.from('expenses').select('*').order('date',{ascending:false});
-  if(error){console.error(error);return;}
-  allData=data||[];
-  populateMonthFilters();
+function updateMonthNavUI() {
+  if (!sortedMonths.length) return;
+  const [y, mo] = sortedMonths[monthIndex].split('-');
+  const monthName = new Date(y, mo-1).toLocaleString('sv-SE', {month:'long'});
+  document.getElementById('month-nav-label').textContent =
+    monthName.charAt(0).toUpperCase() + monthName.slice(1) + ' ' + y;
+  document.getElementById('month-prev').style.opacity = monthIndex > 0 ? '1' : '0.2';
+  document.getElementById('month-next').style.opacity = monthIndex < sortedMonths.length-1 ? '1' : '0.2';
 }
 
-function populateMonthFilters(){
-  const months=new Set();
-  allData.forEach(r=>{
-    const d=new Date(r.date);
-    months.add(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'));
+document.getElementById('month-prev').addEventListener('click', () => {
+  if (monthIndex > 0) {
+    monthIndex--;
+    selectedMonth = sortedMonths[monthIndex];
+    updateMonthNavUI();
+    renderDashboard();
+  }
+});
+
+document.getElementById('month-next').addEventListener('click', () => {
+  if (monthIndex < sortedMonths.length - 1) {
+    monthIndex++;
+    selectedMonth = sortedMonths[monthIndex];
+    updateMonthNavUI();
+    renderDashboard();
+  }
+});
+
+// DASHBOARD
+function getMonthData() {
+  if (!selectedMonth) return allData;
+  return allData.filter(r => {
+    const d = new Date(r.date);
+    const m = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    return m === selectedMonth;
   });
-  const sorted=[...months].sort().reverse();
-  ['filter-month','dash-month'].forEach(id=>{
-    const sel=document.getElementById(id);
-    const cur=sel.value;
-    sel.innerHTML='<option value="">Alla månader</option>';
-    sorted.forEach(m=>{
-      const [y,mo]=m.split('-');
-      const label=new Date(y,mo-1).toLocaleString('sv-SE',{month:'long',year:'numeric'});
-      const o=document.createElement('option');
-      o.value=m;o.textContent=label.charAt(0).toUpperCase()+label.slice(1);
-      if(m===cur)o.selected=true;
-      sel.appendChild(o);
+}
+
+function renderDashboard() {
+  const data = getMonthData();
+  const total = data.reduce((s,r) => s + r.amount, 0);
+
+  document.getElementById('stat-total').innerHTML = fmt(total) + ' <span>kr</span>';
+
+  const container = document.getElementById('dash-content');
+  if (!data.length) { container.innerHTML = '<div class="empty">Inga poster denna period</div>'; return; }
+
+  // Area totals in fixed order
+  const areaTotals = {};
+  AREAS.forEach(a => areaTotals[a] = 0);
+  data.forEach(r => { if (areaTotals[r.area] !== undefined) areaTotals[r.area] += r.amount; });
+  const maxArea = Math.max(...Object.values(areaTotals));
+
+  // Category totals per area
+  const catTotals = {};
+  data.forEach(r => {
+    if (!catTotals[r.area]) catTotals[r.area] = {};
+    catTotals[r.area][r.category] = (catTotals[r.area][r.category] || 0) + r.amount;
+  });
+
+  let html = '';
+
+  // PIE
+  const pieAreas = AREAS.filter(a => areaTotals[a] > 0);
+  html += `<div class="card" style="margin-bottom:0.75rem;">
+    <div class="chart-title">FÖRDELNING PER OMRÅDE</div>
+    <div class="pie-wrap">
+      <div class="pie-canvas-wrap"><canvas id="pie-chart"></canvas></div>
+      <div class="pie-legend">`;
+  pieAreas.forEach(a => {
+    const pct = total > 0 ? Math.round(areaTotals[a] / total * 100) : 0;
+    html += `<div class="pie-legend-item">
+      <div class="pie-legend-dot" style="background:${AREA_COLORS[a]}"></div>
+      <div class="pie-legend-label">${a}</div>
+      <div class="pie-legend-pct">${pct}%</div>
+    </div>`;
+  });
+  html += `</div></div></div>`;
+
+  // AREA BARS
+  html += `<div class="card" style="margin-bottom:0.75rem;">
+    <div class="chart-title">BELOPP PER OMRÅDE</div>`;
+  AREAS.forEach(a => {
+    if (areaTotals[a] === 0) return;
+    const pct = maxArea > 0 ? (areaTotals[a] / maxArea * 100) : 0;
+    html += `<div class="area-bar-row">
+      <div class="area-bar-label">${a}</div>
+      <div class="area-bar-track"><div class="area-bar-fill" style="width:${pct}%;background:${AREA_COLORS[a]}"></div></div>
+      <div class="area-bar-amount">${fmt(areaTotals[a])}</div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // PER AREA CATEGORY BREAKDOWN
+  AREAS.forEach(a => {
+    if (!catTotals[a]) return;
+    const cats = catTotals[a];
+    const areaTotal = areaTotals[a];
+    const maxCat = Math.max(...Object.values(cats));
+    // Sort by category order defined in CATEGORIES
+    const orderedCats = (CATEGORIES[a] || []).filter(c => cats[c]);
+
+    html += `<div class="card" style="margin-bottom:0.75rem;">
+      <div class="area-section-header">
+        <div class="area-dot" style="background:${AREA_COLORS[a]}"></div>
+        <div class="area-section-title">${a}</div>
+        <div class="area-section-total">${fmt(areaTotal)} kr</div>
+      </div>`;
+    orderedCats.forEach(c => {
+      const pct = maxCat > 0 ? (cats[c] / maxCat * 100) : 0;
+      html += `<div class="cat-bar-row">
+        <div class="cat-bar-label">${c}</div>
+        <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${pct}%;background:${AREA_COLORS[a]}88"></div></div>
+        <div class="cat-bar-amount">${fmt(cats[c])}</div>
+      </div>`;
+    });
+    html += `</div>`;
+  });
+
+  container.innerHTML = html;
+
+  // Draw pie
+  new Chart(document.getElementById('pie-chart'), {
+    type: 'doughnut',
+    data: {
+      labels: pieAreas,
+      datasets: [{
+        data: pieAreas.map(a => areaTotals[a]),
+        backgroundColor: pieAreas.map(a => AREA_COLORS[a]),
+        borderWidth: 0,
+        hoverOffset: 4
+      }]
+    },
+    options: {
+      cutout: '65%',
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      responsive: true,
+      maintainAspectRatio: true
+    }
+  });
+}
+
+// TRANSACTIONS
+function renderTransactions() {
+  const area = document.getElementById('filter-area').value;
+  const month = document.getElementById('filter-month-tx').value;
+  let data = allData.filter(r => {
+    if (area && r.area !== area) return false;
+    if (month) {
+      const d = new Date(r.date);
+      const m = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+      if (m !== month) return false;
+    }
+    return true;
+  });
+
+  const list = document.getElementById('tx-list');
+  if (!data.length) { list.innerHTML = '<div class="empty">Inga poster</div>'; return; }
+
+  // Group by month
+  const groups = {};
+  data.forEach(r => {
+    const d = new Date(r.date);
+    const key = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+    if (!groups[key]) groups[key] = [];
+    groups[key].push(r);
+  });
+
+  let html = '';
+  Object.keys(groups).sort().reverse().forEach(key => {
+    const [y, mo] = key.split('-');
+    const label = new Date(y, mo-1).toLocaleString('sv-SE', {month:'long', year:'numeric'});
+    const groupTotal = groups[key].reduce((s,r) => s+r.amount, 0);
+    html += `<div style="display:flex;justify-content:space-between;align-items:baseline;padding:1.25rem 0 0.5rem;">
+      <div style="font-size:13px;font-weight:500;color:var(--text0);">${label.charAt(0).toUpperCase()+label.slice(1)}</div>
+      <div style="font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;">${fmt(groupTotal)} kr</div>
+    </div>`;
+    groups[key].forEach((r, i) => {
+      const d = new Date(r.date);
+      const dateStr = d.toLocaleDateString('sv-SE', {day:'numeric', month:'short'});
+      const isLast = i === groups[key].length - 1;
+      html += `<div class="tx-item" data-id="${r.id}" style="${isLast ? 'border-bottom:0.5px solid var(--border);' : ''}">
+        <div class="tx-dot" style="background:${AREA_COLORS[r.area]}"></div>
+        <div class="tx-main">
+          <div class="tx-cat">${r.category}</div>
+          <div class="tx-meta">${r.area}${r.comment ? ' · ' + r.comment : ''}</div>
+        </div>
+        <div class="tx-right">
+          <div class="tx-amount">${fmt(r.amount)}</div>
+          <div class="tx-date">${dateStr}</div>
+        </div>
+      </div>`;
+    });
+  });
+
+  list.innerHTML = html;
+  list.querySelectorAll('.tx-item').forEach(el => {
+    el.addEventListener('click', () => openEdit(el.dataset.id));
+  });
+}
+
+document.getElementById('filter-area').addEventListener('change', renderTransactions);
+document.getElementById('filter-month-tx').addEventListener('change', renderTransactions);
+
+// ADD FORM
+document.querySelectorAll('.area-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.area-chip').forEach(c => c.classList.remove('selected'));
+    chip.classList.add('selected');
+    selectedArea = chip.dataset.area;
+    selectedCategory = '';
+    buildCatChips();
+    document.getElementById('cat-group').style.display = 'block';
+    checkSaveReady();
+  });
+});
+
+function buildCatChips() {
+  const cats = CATEGORIES[selectedArea] || [];
+  const container = document.getElementById('cat-chips');
+  container.innerHTML = cats.map(c =>
+    `<div class="cat-chip" data-cat="${c}">${c}</div>`
+  ).join('');
+  container.querySelectorAll('.cat-chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      container.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      selectedCategory = chip.dataset.cat;
+      checkSaveReady();
     });
   });
 }
 
-// Transactions
-function renderTransactions(){
-  const area=document.getElementById('filter-area').value;
-  const month=document.getElementById('filter-month').value;
-  let data=allData.filter(r=>{
-    if(area&&r.area!==area)return false;
-    if(month){
-      const d=new Date(r.date);
-      const m=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-      if(m!==month)return false;
-    }
-    return true;
-  });
-  const list=document.getElementById('tx-list');
-  if(!data.length){list.innerHTML='<div class="empty">Inga poster hittades</div>';return;}
-  list.innerHTML=data.map(r=>{
-    const d=new Date(r.date);
-    const dateStr=d.toLocaleDateString('sv-SE',{day:'numeric',month:'short'});
-    return `<div class="tx-item" data-id="${r.id}">
-      <div class="tx-top">
-        <div>
-          <span class="tx-area-badge">${r.area}</span>
-          <div class="tx-cats" style="margin-top:4px">${r.category}</div>
-        </div>
-        <div class="tx-amount">${fmt(r.amount)}</div>
-      </div>
-      <div class="tx-bottom">
-        <div class="tx-date">${dateStr}</div>
-        <div class="tx-comment">${r.comment||''}</div>
-      </div>
-    </div>`;
-  }).join('');
-  list.querySelectorAll('.tx-item').forEach(el=>{
-    el.addEventListener('click',()=>openEdit(el.dataset.id));
-  });
+document.getElementById('amount-input').addEventListener('input', checkSaveReady);
+
+function checkSaveReady() {
+  const amt = parseInt(document.getElementById('amount-input').value);
+  document.getElementById('save-btn').disabled = !(selectedArea && selectedCategory && amt > 0);
 }
 
-document.getElementById('filter-area').addEventListener('change',renderTransactions);
-document.getElementById('filter-month').addEventListener('change',renderTransactions);
+document.getElementById('save-btn').addEventListener('click', async () => {
+  const amt = parseInt(document.getElementById('amount-input').value);
+  const comment = document.getElementById('comment-input').value.trim();
+  const btn = document.getElementById('save-btn');
+  btn.textContent = 'Sparar...'; btn.disabled = true;
 
-// Edit modal
-function openEdit(id){
-  const r=allData.find(x=>x.id===id);
-  if(!r)return;
-  editingId=id;
-  const areaEl=document.getElementById('edit-area');
-  const catEl=document.getElementById('edit-category');
-  areaEl.innerHTML=Object.keys(CATEGORIES).map(a=>`<option${a===r.area?' selected':''}>${a}</option>`).join('');
-  populateCats(areaEl,catEl,r.category);
-  document.getElementById('edit-amount').value=r.amount;
-  document.getElementById('edit-comment').value=r.comment||'';
+  const { error } = await sb.from('expenses').insert({
+    date: new Date().toISOString(),
+    area: selectedArea,
+    category: selectedCategory,
+    amount: amt,
+    comment: comment || null
+  });
+
+  btn.textContent = 'Spara utgift';
+  if (error) { alert('Fel: ' + error.message); checkSaveReady(); return; }
+
+  // Reset
+  document.querySelectorAll('.area-chip').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('.cat-chip').forEach(c => c.classList.remove('selected'));
+  document.getElementById('amount-input').value = '';
+  document.getElementById('comment-input').value = '';
+  document.getElementById('cat-group').style.display = 'none';
+  selectedArea = ''; selectedCategory = '';
+  checkSaveReady();
+
+  showToast('Utgift sparad!');
+  await loadData();
+});
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// EDIT MODAL
+function openEdit(id) {
+  const r = allData.find(x => x.id === id);
+  if (!r) return;
+  editingId = id;
+  const areaEl = document.getElementById('edit-area');
+  const catEl = document.getElementById('edit-category');
+  areaEl.innerHTML = AREAS.map(a => `<option${a===r.area?' selected':''}>${a}</option>`).join('');
+  populateEditCats(r.area, r.category);
+  document.getElementById('edit-amount').value = r.amount;
+  document.getElementById('edit-comment').value = r.comment || '';
   document.getElementById('modal').classList.add('open');
 }
 
-document.getElementById('edit-area').addEventListener('change',()=>{
-  populateCats(document.getElementById('edit-area'),document.getElementById('edit-category'));
+function populateEditCats(area, selected) {
+  const catEl = document.getElementById('edit-category');
+  catEl.innerHTML = (CATEGORIES[area]||[]).map(c =>
+    `<option${c===selected?' selected':''}>${c}</option>`
+  ).join('');
+}
+
+document.getElementById('edit-area').addEventListener('change', function() {
+  populateEditCats(this.value, '');
 });
 
-document.getElementById('modal-close').addEventListener('click',()=>{
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal')) document.getElementById('modal').classList.remove('open');
+});
+
+document.getElementById('update-btn').addEventListener('click', async () => {
+  const area = document.getElementById('edit-area').value;
+  const cat = document.getElementById('edit-category').value;
+  const amt = parseInt(document.getElementById('edit-amount').value);
+  const comment = document.getElementById('edit-comment').value.trim();
+  const { error } = await sb.from('expenses').update({ area, category: cat, amount: amt, comment: comment||null }).eq('id', editingId);
+  if (error) { alert('Fel: ' + error.message); return; }
   document.getElementById('modal').classList.remove('open');
-});
-
-document.getElementById('modal').addEventListener('click',e=>{
-  if(e.target===document.getElementById('modal'))document.getElementById('modal').classList.remove('open');
-});
-
-document.getElementById('update-btn').addEventListener('click',async()=>{
-  const area=document.getElementById('edit-area').value;
-  const cat=document.getElementById('edit-category').value;
-  const amt=parseInt(document.getElementById('edit-amount').value);
-  const comment=document.getElementById('edit-comment').value.trim();
-  if(!area||!cat||!amt)return;
-  const {error}=await sb.from('expenses').update({area,category:cat,amount:amt,comment:comment||null}).eq('id',editingId);
-  if(error){alert('Fel: '+error.message);return;}
-  document.getElementById('modal').classList.remove('open');
+  showToast('Uppdaterad!');
   await loadData();
   renderTransactions();
 });
 
-document.getElementById('delete-btn').addEventListener('click',async()=>{
-  if(!confirm('Ta bort denna post?'))return;
-  const {error}=await sb.from('expenses').delete().eq('id',editingId);
-  if(error){alert('Fel: '+error.message);return;}
+document.getElementById('delete-btn').addEventListener('click', async () => {
+  if (!confirm('Ta bort denna post?')) return;
+  const { error } = await sb.from('expenses').delete().eq('id', editingId);
+  if (error) { alert('Fel: ' + error.message); return; }
   document.getElementById('modal').classList.remove('open');
+  showToast('Borttagen');
   await loadData();
   renderTransactions();
 });
 
-// Dashboard
-function getFilteredData(){
-  const month=document.getElementById('dash-month').value;
-  if(!month)return allData;
-  return allData.filter(r=>{
-    const d=new Date(r.date);
-    const m=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
-    return m===month;
-  });
+// LOAD
+async function loadData() {
+  const { data, error } = await sb.from('expenses').select('*').order('date', { ascending: false });
+  if (error) { console.error(error); return; }
+  allData = data || [];
+  buildMonthNav();
+  renderDashboard();
 }
-
-function renderDashboard(){
-  const data=getFilteredData();
-  const total=data.reduce((s,r)=>s+r.amount,0);
-  document.getElementById('stat-total').textContent=fmt(total);
-  document.getElementById('stat-count').textContent=data.length;
-
-  // Area chart
-  const areaMap={};
-  data.forEach(r=>areaMap[r.area]=(areaMap[r.area]||0)+r.amount);
-  const areaLabels=Object.keys(areaMap);
-  const areaVals=areaLabels.map(k=>areaMap[k]);
-  if(areaChart)areaChart.destroy();
-  areaChart=new Chart(document.getElementById('area-chart'),{
-    type:'bar',
-    data:{labels:areaLabels,datasets:[{data:areaVals,backgroundColor:COLORS,borderRadius:6,borderWidth:0}]},
-    options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:v=>Math.round(v).toLocaleString('sv-SE')}}},responsive:true,maintainAspectRatio:false}
-  });
-
-  // Category chart
-  const catMap={};
-  data.forEach(r=>catMap[r.category]=(catMap[r.category]||0)+r.amount);
-  const catSorted=Object.entries(catMap).sort((a,b)=>b[1]-a[1]).slice(0,8);
-  if(catChart)catChart.destroy();
-  catChart=new Chart(document.getElementById('cat-chart'),{
-    type:'bar',
-    data:{labels:catSorted.map(x=>x[0]),datasets:[{data:catSorted.map(x=>x[1]),backgroundColor:COLORS,borderRadius:6,borderWidth:0}]},
-    options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:v=>Math.round(v).toLocaleString('sv-SE')}},y:{grid:{display:false}}},responsive:true,maintainAspectRatio:false}
-  });
-
-  // Day chart
-  const dayMap={};
-  data.forEach(r=>{
-    const d=new Date(r.date).toLocaleDateString('sv-SE',{month:'short',day:'numeric'});
-    dayMap[d]=(dayMap[d]||0)+r.amount;
-  });
-  const daySorted=Object.entries(dayMap).sort((a,b)=>new Date(a[0])-new Date(b[0]));
-  if(dayChart)dayChart.destroy();
-  dayChart=new Chart(document.getElementById('day-chart'),{
-    type:'line',
-    data:{labels:daySorted.map(x=>x[0]),datasets:[{data:daySorted.map(x=>x[1]),borderColor:COLORS[0],backgroundColor:COLORS[0]+'22',fill:true,tension:0.3,pointRadius:3,borderWidth:2}]},
-    options:{plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{maxTicksLimit:8}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{callback:v=>Math.round(v).toLocaleString('sv-SE')}}},responsive:true,maintainAspectRatio:false}
-  });
-}
-
-document.getElementById('dash-month').addEventListener('change',renderDashboard);
 
 loadData();
 </script>
