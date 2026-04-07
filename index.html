@@ -27,7 +27,7 @@
   --accent: #53c990;
   --accent-dim: rgba(83,201,144,0.12);
   --red: #ff5f57;
-  --nav-h: 86px;
+  --nav-h: 74px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
@@ -40,7 +40,8 @@
 }
 
 html, body {
-  height: 100dvh;
+  min-height: 100%;
+  height: auto;
   background: var(--bg0);
   color: var(--text0);
   font-family: 'DM Sans', system-ui, sans-serif;
@@ -53,7 +54,8 @@ body {
   max-width: 430px;
   margin: 0 auto;
   position: relative;
-  min-height: 100dvh;
+  min-height: 100svh;
+  background: var(--bg0);
 }
 
 /* SCROLLABLE CONTENT */
@@ -61,7 +63,7 @@ body {
   flex: 1;
   overflow-y: auto;
   padding-top: calc(var(--safe-top) + 10px);
-  padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 1rem);
+  padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 6px);
   -webkit-overflow-scrolling: touch;
 }
 
@@ -84,9 +86,9 @@ body {
 }
 
 .topbar-title {
-  font-size: 28px;
+  font-size: 34px;
   font-weight: 600;
-  letter-spacing: -0.6px;
+  letter-spacing: -0.8px;
 }
 
 .topbar-sub {
@@ -103,12 +105,12 @@ body {
   transform: translateX(-50%);
   width: 100%;
   max-width: 430px;
-  background: rgba(10,10,10,0.95);
+  background: rgba(10,10,10,0.98);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-top: 0.5px solid var(--border);
   display: flex;
-  padding-top: 6px;
+  padding-top: 8px;
   padding-bottom: calc(var(--safe-bottom) + 10px);
   z-index: 100;
 }
@@ -119,10 +121,10 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 12px 0 10px;
-  gap: 5px;
+  padding: 10px 0 8px;
+  gap: 6px;
   cursor: pointer;
-  min-height: 58px;
+  min-height: 56px;
 }
 
 .nav-icon {
@@ -145,9 +147,9 @@ body {
 }
 
 .nav-label {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text2);
-  letter-spacing: 0.2px;
+  letter-spacing: 0.1px;
   transition: color 0.15s;
 }
 
@@ -159,31 +161,13 @@ body {
   color: var(--accent);
 }
 
-/* SECTION */
-.section {
-  margin-bottom: 1rem;
-}
-
-.section-label {
-  font-size: 12px;
-  color: var(--text2);
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-  font-family: 'DM Mono', monospace;
-  padding: 0 0 0.5rem;
-}
-
 /* CARDS */
 .card {
   background: var(--bg1);
   border: 0.5px solid var(--border);
   border-radius: 18px;
-  padding: 1.1rem 1.25rem;
-  margin-bottom: 0.65rem;
-}
-
-.card-sm {
-  padding: 0.85rem 1rem;
+  padding: 1.3rem 1.35rem;
+  margin-bottom: 0.8rem;
 }
 
 /* STAT HERO */
@@ -193,10 +177,10 @@ body {
 }
 
 .stat-hero-label {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text2);
-  letter-spacing: 1px;
-  margin-bottom: 10px;
+  letter-spacing: 1.2px;
+  margin-bottom: 12px;
   font-family: 'DM Mono', monospace;
   text-transform: uppercase;
 }
@@ -205,15 +189,15 @@ body {
   display: inline-flex;
   align-items: flex-end;
   justify-content: center;
-  font-size: 52px;
+  font-size: 60px;
   font-weight: 300;
-  letter-spacing: -2px;
+  letter-spacing: -2.4px;
   color: var(--text0);
   line-height: 1;
 }
 
 .stat-hero-value span {
-  font-size: 24px;
+  font-size: 28px;
   color: var(--text1);
   font-weight: 300;
   margin-left: 8px;
@@ -226,7 +210,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 0;
-  padding: 0.3rem 1rem 0.7rem;
+  padding: 0.3rem 1rem 0.8rem;
 }
 
 .month-nav-btn {
@@ -259,61 +243,10 @@ body {
 .month-nav-label {
   flex: 1;
   text-align: center;
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 500;
-  letter-spacing: -0.3px;
+  letter-spacing: -0.4px;
   color: var(--text0);
-}
-
-/* CHART */
-.chart-wrap {
-  position: relative;
-}
-
-.chart-title {
-  font-size: 13px;
-  color: var(--text1);
-  margin-bottom: 0.85rem;
-  font-family: 'DM Mono', monospace;
-  letter-spacing: 0.5px;
-}
-
-/* AREA BARS */
-.area-bar-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.area-bar-label {
-  font-size: 15px;
-  color: var(--text1);
-  width: 84px;
-  flex-shrink: 0;
-}
-
-.area-bar-track {
-  flex: 1;
-  height: 6px;
-  background: var(--bg3);
-  border-radius: 100px;
-  overflow: hidden;
-}
-
-.area-bar-fill {
-  height: 100%;
-  border-radius: 100px;
-  transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
-}
-
-.area-bar-amount {
-  font-size: 13px;
-  color: var(--text1);
-  font-family: 'DM Mono', monospace;
-  width: 80px;
-  text-align: right;
-  flex-shrink: 0;
 }
 
 /* PIE */
@@ -351,15 +284,80 @@ body {
 }
 
 .pie-legend-label {
-  font-size: 15px;
+  font-size: 18px;
   color: var(--text1);
   flex: 1;
 }
 
 .pie-legend-pct {
-  font-size: 13px;
+  font-size: 16px;
   color: var(--text0);
   font-family: 'DM Mono', monospace;
+}
+
+/* AREA BARS */
+.area-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.area-bar-label {
+  font-size: 18px;
+  color: var(--text1);
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.area-bar-track {
+  flex: 1;
+  height: 6px;
+  background: var(--bg3);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.area-bar-fill {
+  height: 100%;
+  border-radius: 100px;
+  transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
+}
+
+.area-bar-amount {
+  font-size: 16px;
+  color: var(--text1);
+  font-family: 'DM Mono', monospace;
+  width: 96px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* AREA SECTION HEADER */
+.area-section-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 0.85rem;
+}
+
+.area-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.area-section-title {
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.area-section-total {
+  font-size: 16px;
+  color: var(--text1);
+  font-family: 'DM Mono', monospace;
+  margin-left: auto;
 }
 
 /* CATEGORY BARS */
@@ -371,9 +369,9 @@ body {
 }
 
 .cat-bar-label {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--text1);
-  width: 118px;
+  width: 132px;
   flex-shrink: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -395,39 +393,33 @@ body {
 }
 
 .cat-bar-amount {
-  font-size: 12px;
+  font-size: 14px;
   color: var(--text1);
   font-family: 'DM Mono', monospace;
-  width: 68px;
+  width: 82px;
   text-align: right;
   flex-shrink: 0;
 }
 
-/* AREA SECTION HEADER */
-.area-section-header {
+/* FILTER */
+.filter-row {
   display: flex;
-  align-items: center;
   gap: 8px;
-  margin-bottom: 0.85rem;
+  margin-bottom: 1rem;
 }
 
-.area-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-
-.area-section-title {
+.filter-row select {
+  flex: 1;
+  background: var(--bg1);
+  border: 0.5px solid var(--border);
+  border-radius: 12px;
+  color: var(--text0);
   font-size: 16px;
-  font-weight: 500;
-}
-
-.area-section-total {
-  font-size: 13px;
-  color: var(--text1);
-  font-family: 'DM Mono', monospace;
-  margin-left: auto;
+  padding: 12px 12px;
+  font-family: 'DM Sans', sans-serif;
+  appearance: none;
+  -webkit-appearance: none;
+  min-height: 46px;
 }
 
 /* TRANSACTIONS */
@@ -514,31 +506,10 @@ body {
   white-space: nowrap;
 }
 
-/* FILTER */
-.filter-row {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 1rem;
-}
-
-.filter-row select {
-  flex: 1;
-  background: var(--bg1);
-  border: 0.5px solid var(--border);
-  border-radius: 12px;
-  color: var(--text0);
-  font-size: 16px;
-  padding: 12px 12px;
-  font-family: 'DM Sans', sans-serif;
-  appearance: none;
-  -webkit-appearance: none;
-  min-height: 46px;
-}
-
 /* TOAST */
 .toast {
   position: fixed;
-  top: calc(var(--safe-top) + 10px);
+  top: calc(var(--safe-top) + 56px);
   left: 50%;
   transform: translateX(-50%) translateY(-80px);
   background: var(--accent);
@@ -684,7 +655,6 @@ body {
 
 <div class="content" id="content">
 
-  <!-- OVERVIEW -->
   <div class="view active" id="view-dashboard">
     <div class="topbar">
       <div class="topbar-title">Spendless</div>
@@ -706,7 +676,6 @@ body {
     </div>
   </div>
 
-  <!-- EXPENSES -->
   <div class="view" id="view-transactions">
     <div class="topbar">
       <div class="topbar-title">Utgifter</div>
@@ -735,7 +704,6 @@ body {
 
 </div>
 
-<!-- BOTTOM NAV -->
 <nav class="bottom-nav">
   <div class="nav-item active" data-view="dashboard">
     <div class="nav-icon">
@@ -752,10 +720,8 @@ body {
   </div>
 </nav>
 
-<!-- TOAST -->
 <div class="toast" id="toast">Uppdaterad!</div>
 
-<!-- EDIT MODAL -->
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <div class="modal-handle"></div>
@@ -801,7 +767,6 @@ const CATEGORIES = {
   'Hushåll': ['Mat','Underhåll'],
   'Familj': ['Aktiviteter','Resor','Restaurant']
 };
-
 const AREA_COLORS = {
   'Barn': '#53c990',
   'Personligt': '#60c8f0',
@@ -813,13 +778,13 @@ const AREA_COLORS = {
 let allData = [];
 let selectedMonth = '';
 let editingId = null;
+let sortedMonths = [];
+let monthIndex = 0;
 
-// FORMAT
 function fmt(n) {
   return Math.round(n).toLocaleString('sv-SE');
 }
 
-// NAV
 document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', () => {
     const view = item.dataset.view;
@@ -837,20 +802,17 @@ function switchView(name) {
   if (name === 'dashboard') renderDashboard();
 }
 
-let sortedMonths = [];
-let monthIndex = 0;
-
 function buildMonthNav() {
   const months = new Set();
   allData.forEach(r => {
     const d = new Date(r.date);
-    months.add(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0'));
+    months.add(d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2,'0'));
   });
 
   sortedMonths = [...months].sort();
 
   const now = new Date();
-  const curKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0');
+  const curKey = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2,'0');
 
   if (!selectedMonth || !sortedMonths.includes(selectedMonth)) {
     selectedMonth = sortedMonths.includes(curKey) ? curKey : (sortedMonths[sortedMonths.length - 1] || '');
@@ -880,7 +842,6 @@ function updateMonthNavUI() {
   const monthName = new Date(y, mo - 1).toLocaleString('sv-SE', { month: 'long' });
   document.getElementById('month-nav-label').textContent =
     monthName.charAt(0).toUpperCase() + monthName.slice(1) + ' ' + y;
-
   document.getElementById('month-prev').style.opacity = monthIndex > 0 ? '1' : '0.2';
   document.getElementById('month-next').style.opacity = monthIndex < sortedMonths.length - 1 ? '1' : '0.2';
 }
@@ -903,12 +864,11 @@ document.getElementById('month-next').addEventListener('click', () => {
   }
 });
 
-// DASHBOARD
 function getMonthData() {
   if (!selectedMonth) return allData;
   return allData.filter(r => {
     const d = new Date(r.date);
-    const m = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    const m = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2,'0');
     return m === selectedMonth;
   });
 }
@@ -939,8 +899,8 @@ function renderDashboard() {
   });
 
   const maxArea = Math.max(...Object.values(areaTotals));
-
   const catTotals = {};
+
   data.forEach(r => {
     if (!catTotals[r.area]) catTotals[r.area] = {};
     catTotals[r.area][r.category] = (catTotals[r.area][r.category] || 0) + r.amount;
@@ -948,51 +908,36 @@ function renderDashboard() {
 
   let html = '';
 
-  // PIE
   const pieAreas = AREAS.filter(a => areaTotals[a] > 0);
 
-  html += `
-    <div class="card" style="margin-bottom:0.85rem;">
-      <div class="pie-wrap">
-        <div class="pie-canvas-wrap"><canvas id="pie-chart"></canvas></div>
-        <div class="pie-legend">
-  `;
+  html += `<div class="card" style="margin-bottom:0.85rem;">
+    <div class="pie-wrap">
+      <div class="pie-canvas-wrap"><canvas id="pie-chart"></canvas></div>
+      <div class="pie-legend">`;
 
   pieAreas.forEach(a => {
     const pct = total > 0 ? Math.round(areaTotals[a] / total * 100) : 0;
-    html += `
-      <div class="pie-legend-item">
-        <div class="pie-legend-dot" style="background:${AREA_COLORS[a]}"></div>
-        <div class="pie-legend-label">${a}</div>
-        <div class="pie-legend-pct">${pct} %</div>
-      </div>
-    `;
+    html += `<div class="pie-legend-item">
+      <div class="pie-legend-dot" style="background:${AREA_COLORS[a]}"></div>
+      <div class="pie-legend-label">${a}</div>
+      <div class="pie-legend-pct">${pct} %</div>
+    </div>`;
   });
 
-  html += `
-        </div>
-      </div>
-    </div>
-  `;
+  html += `</div></div></div>`;
 
-  // AREA BARS
   html += `<div class="card" style="margin-bottom:0.85rem;">`;
   AREAS.forEach(a => {
     if (areaTotals[a] === 0) return;
     const pct = maxArea > 0 ? (areaTotals[a] / maxArea * 100) : 0;
-    html += `
-      <div class="area-bar-row">
-        <div class="area-bar-label">${a}</div>
-        <div class="area-bar-track">
-          <div class="area-bar-fill" style="width:${pct}%;background:${AREA_COLORS[a]}"></div>
-        </div>
-        <div class="area-bar-amount">${fmt(areaTotals[a])} kr</div>
-      </div>
-    `;
+    html += `<div class="area-bar-row">
+      <div class="area-bar-label">${a}</div>
+      <div class="area-bar-track"><div class="area-bar-fill" style="width:${pct}%;background:${AREA_COLORS[a]}"></div></div>
+      <div class="area-bar-amount">${fmt(areaTotals[a])} kr</div>
+    </div>`;
   });
   html += `</div>`;
 
-  // PER AREA CATEGORY BREAKDOWN
   AREAS.forEach(a => {
     if (!catTotals[a]) return;
     const cats = catTotals[a];
@@ -1000,26 +945,20 @@ function renderDashboard() {
     const maxCat = Math.max(...Object.values(cats));
     const orderedCats = (CATEGORIES[a] || []).filter(c => cats[c]);
 
-    html += `
-      <div class="card" style="margin-bottom:0.85rem;">
-        <div class="area-section-header">
-          <div class="area-dot" style="background:${AREA_COLORS[a]}"></div>
-          <div class="area-section-title">${a}</div>
-          <div class="area-section-total">${fmt(areaTotal)} kr</div>
-        </div>
-    `;
+    html += `<div class="card" style="margin-bottom:0.85rem;">
+      <div class="area-section-header">
+        <div class="area-dot" style="background:${AREA_COLORS[a]}"></div>
+        <div class="area-section-title">${a}</div>
+        <div class="area-section-total">${fmt(areaTotal)} kr</div>
+      </div>`;
 
     orderedCats.forEach(c => {
       const pct = maxCat > 0 ? (cats[c] / maxCat * 100) : 0;
-      html += `
-        <div class="cat-bar-row">
-          <div class="cat-bar-label">${c}</div>
-          <div class="cat-bar-track">
-            <div class="cat-bar-fill" style="width:${pct}%;background:${AREA_COLORS[a]}88"></div>
-          </div>
-          <div class="cat-bar-amount">${fmt(cats[c])} kr</div>
-        </div>
-      `;
+      html += `<div class="cat-bar-row">
+        <div class="cat-bar-label">${c}</div>
+        <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${pct}%;background:${AREA_COLORS[a]}88"></div></div>
+        <div class="cat-bar-amount">${fmt(cats[c])} kr</div>
+      </div>`;
     });
 
     html += `</div>`;
@@ -1047,7 +986,6 @@ function renderDashboard() {
   });
 }
 
-// EXPENSES
 function renderTransactions() {
   const area = document.getElementById('filter-area').value;
   const month = document.getElementById('filter-month-tx').value;
@@ -1056,7 +994,7 @@ function renderTransactions() {
     if (area && r.area !== area) return false;
     if (month) {
       const d = new Date(r.date);
-      const m = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+      const m = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2,'0');
       if (m !== month) return false;
     }
     return true;
@@ -1071,7 +1009,7 @@ function renderTransactions() {
   const groups = {};
   data.forEach(r => {
     const d = new Date(r.date);
-    const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+    const key = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2,'0');
     if (!groups[key]) groups[key] = [];
     groups[key].push(r);
   });
@@ -1084,31 +1022,27 @@ function renderTransactions() {
     const label = new Date(y, mo - 1).toLocaleString('sv-SE', { month: 'long', year: 'numeric' });
     const groupTotal = groups[key].reduce((s, r) => s + r.amount, 0);
 
-    html += `
-      <div class="tx-month-header ${idx === 0 ? 'first' : ''}">
-        <div class="tx-month-title">${label.charAt(0).toUpperCase() + label.slice(1)}</div>
-        <div class="tx-month-total">${fmt(groupTotal)} kr</div>
-      </div>
-    `;
+    html += `<div class="tx-month-header ${idx === 0 ? 'first' : ''}">
+      <div class="tx-month-title">${label.charAt(0).toUpperCase() + label.slice(1)}</div>
+      <div class="tx-month-total">${fmt(groupTotal)} kr</div>
+    </div>`;
 
     groups[key].forEach((r, i) => {
       const d = new Date(r.date);
       const dateText = d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' });
       const isLast = i === groups[key].length - 1;
 
-      html += `
-        <div class="tx-item" data-id="${r.id}" style="${isLast ? 'border-bottom:none;' : ''}">
-          <div class="tx-dot" style="background:${AREA_COLORS[r.area]}"></div>
-          <div class="tx-main">
-            <div class="tx-cat">${r.category}</div>
-            <div class="tx-meta">${r.area}${r.comment ? ' · ' + r.comment : ''}</div>
-            <div class="tx-date-inline">${dateText}</div>
-          </div>
-          <div class="tx-right">
-            <div class="tx-amount">${fmt(r.amount)} kr</div>
-          </div>
+      html += `<div class="tx-item" data-id="${r.id}" style="${isLast ? 'border-bottom:none;' : ''}">
+        <div class="tx-dot" style="background:${AREA_COLORS[r.area]}"></div>
+        <div class="tx-main">
+          <div class="tx-cat">${r.category}</div>
+          <div class="tx-meta">${r.area}${r.comment ? ' · ' + r.comment : ''}</div>
+          <div class="tx-date-inline">${dateText}</div>
         </div>
-      `;
+        <div class="tx-right">
+          <div class="tx-amount">${fmt(r.amount)} kr</div>
+        </div>
+      </div>`;
     });
   });
 
@@ -1122,16 +1056,13 @@ function renderTransactions() {
 document.getElementById('filter-area').addEventListener('change', renderTransactions);
 document.getElementById('filter-month-tx').addEventListener('change', renderTransactions);
 
-// EDIT MODAL
 function openEdit(id) {
   const r = allData.find(x => x.id === id);
   if (!r) return;
-
   editingId = id;
 
   const areaEl = document.getElementById('edit-area');
-  areaEl.innerHTML = AREAS.map(a => `<option${a === r.area ? ' selected' : ''}>${a}</option>`).join('');
-
+  areaEl.innerHTML = AREAS.map(a => `<option${a===r.area ? ' selected' : ''}>${a}</option>`).join('');
   populateEditCats(r.area, r.category);
 
   document.getElementById('edit-amount').value = r.amount;
@@ -1141,9 +1072,7 @@ function openEdit(id) {
 
 function populateEditCats(area, selected) {
   const catEl = document.getElementById('edit-category');
-  catEl.innerHTML = (CATEGORIES[area] || []).map(c =>
-    `<option${c === selected ? ' selected' : ''}>${c}</option>`
-  ).join('');
+  catEl.innerHTML = (CATEGORIES[area] || []).map(c => `<option${c===selected ? ' selected' : ''}>${c}</option>`).join('');
 }
 
 document.getElementById('edit-area').addEventListener('change', function() {
@@ -1201,7 +1130,6 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 2200);
 }
 
-// LOAD
 async function loadData() {
   const { data, error } = await sb
     .from('expenses')
