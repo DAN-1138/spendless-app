@@ -23,10 +23,11 @@
   --text0: #f0f0f0;
   --text1: #a0a0a0;
   --text2: #555555;
-  --accent: #c8f060;
-  --accent-dim: rgba(200,240,96,0.12);
+  --accent: #53c990;
+  --accent-dim: rgba(83,201,144,0.12);
   --red: #ff5f57;
   --nav-h: 72px;
+  --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -34,32 +35,32 @@ html, body { height: 100%; background: var(--bg0); color: var(--text0); font-fam
 body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; position: relative; }
 
 /* SCROLLABLE CONTENT */
-.content { flex: 1; overflow-y: auto; padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 1rem); -webkit-overflow-scrolling: touch; }
+.content { flex: 1; overflow-y: auto; padding-top: var(--safe-top); padding-bottom: calc(var(--nav-h) + var(--safe-bottom) + 1rem); -webkit-overflow-scrolling: touch; }
 
 /* VIEWS */
-.view { display: none; padding: 0 1rem; }
+.view { display: none; padding: 0 0.75rem; }
 .view.active { display: block; }
 
 /* TOP BAR */
-.topbar { padding: 1rem 1rem 0.5rem; display: flex; align-items: flex-end; justify-content: space-between; }
-.topbar-title { font-size: 22px; font-weight: 500; letter-spacing: -0.5px; }
-.topbar-sub { font-size: 13px; color: var(--text1); font-family: 'DM Mono', monospace; }
+.topbar { padding: 1rem 0.75rem 0.5rem; display: flex; align-items: flex-end; justify-content: space-between; }
+.topbar-title { font-size: 24px; font-weight: 600; letter-spacing: -0.5px; }
+.topbar-sub { font-size: 14px; color: var(--text1); font-family: 'DM Mono', monospace; }
 
 /* BOTTOM NAV */
 .bottom-nav {
   position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
   width: 100%; max-width: 430px;
-  background: rgba(10,10,10,0.92);
+  background: rgba(10,10,10,0.95);
   backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
   border-top: 0.5px solid var(--border);
   display: flex;
-  padding-bottom: var(--safe-bottom);
+  padding-bottom: max(var(--safe-bottom), 8px);
   z-index: 100;
 }
 .nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 12px 0 10px; gap: 4px; cursor: pointer; }
 .nav-icon { width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
 .nav-icon svg { width: 22px; height: 22px; stroke: var(--text2); fill: none; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.15s; }
-.nav-label { font-size: 10px; color: var(--text2); letter-spacing: 0.3px; transition: color 0.15s; }
+.nav-label { font-size: 11px; color: var(--text2); letter-spacing: 0.3px; transition: color 0.15s; }
 .nav-item.active .nav-icon svg { stroke: var(--accent); }
 .nav-item.active .nav-label { color: var(--accent); }
 
@@ -79,10 +80,10 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 .card-sm { padding: 0.75rem 1rem; }
 
 /* STAT HERO */
-.stat-hero { padding: 1.5rem 1rem 1rem; }
-.stat-hero-label { font-size: 12px; color: var(--text1); letter-spacing: 0.5px; margin-bottom: 6px; font-family: 'DM Mono', monospace; }
-.stat-hero-value { font-size: 42px; font-weight: 300; letter-spacing: -2px; color: var(--text0); line-height: 1; }
-.stat-hero-value span { font-size: 20px; color: var(--text1); font-weight: 300; }
+.stat-hero { padding: 1.25rem 0.75rem 1.25rem; text-align: center; }
+.stat-hero-label { font-size: 11px; color: var(--text2); letter-spacing: 1px; margin-bottom: 8px; font-family: 'DM Mono', monospace; text-transform: uppercase; }
+.stat-hero-value { font-size: 48px; font-weight: 300; letter-spacing: -2px; color: var(--text0); line-height: 1; }
+.stat-hero-value span { font-size: 22px; color: var(--text1); font-weight: 300; }
 
 /* MONTH NAV */
 .month-nav { display: flex; align-items: center; justify-content: center; gap: 0; padding: 0.25rem 1rem 0.5rem; }
@@ -96,49 +97,50 @@ body { display: flex; flex-direction: column; max-width: 430px; margin: 0 auto; 
 .chart-title { font-size: 12px; color: var(--text1); margin-bottom: 0.75rem; font-family: 'DM Mono', monospace; letter-spacing: 0.5px; }
 
 /* AREA BARS */
-.area-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.area-bar-label { font-size: 13px; color: var(--text1); width: 72px; flex-shrink: 0; }
+.area-bar-row { display: flex; align-items: center; gap: 10px; margin-bottom: 11px; }
+.area-bar-label { font-size: 14px; color: var(--text1); width: 76px; flex-shrink: 0; }
 .area-bar-track { flex: 1; height: 6px; background: var(--bg3); border-radius: 100px; overflow: hidden; }
 .area-bar-fill { height: 100%; border-radius: 100px; transition: width 0.6s cubic-bezier(0.16,1,0.3,1); }
-.area-bar-amount { font-size: 12px; color: var(--text1); font-family: 'DM Mono', monospace; width: 64px; text-align: right; flex-shrink: 0; }
+.area-bar-amount { font-size: 13px; color: var(--text1); font-family: 'DM Mono', monospace; width: 72px; text-align: right; flex-shrink: 0; }
 
 /* PIE */
 .pie-wrap { display: flex; gap: 1.25rem; align-items: center; }
 .pie-canvas-wrap { width: 140px; height: 140px; flex-shrink: 0; position: relative; }
-.pie-legend { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.pie-legend { flex: 1; display: flex; flex-direction: column; gap: 9px; }
 .pie-legend-item { display: flex; align-items: center; gap: 8px; }
 .pie-legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.pie-legend-label { font-size: 13px; color: var(--text1); flex: 1; }
-.pie-legend-pct { font-size: 12px; color: var(--text0); font-family: 'DM Mono', monospace; }
+.pie-legend-label { font-size: 14px; color: var(--text1); flex: 1; }
+.pie-legend-pct { font-size: 13px; color: var(--text0); font-family: 'DM Mono', monospace; }
 
 /* CATEGORY BARS */
-.cat-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
-.cat-bar-label { font-size: 12px; color: var(--text1); width: 110px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cat-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 9px; }
+.cat-bar-label { font-size: 13px; color: var(--text1); width: 110px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cat-bar-track { flex: 1; height: 5px; background: var(--bg3); border-radius: 100px; overflow: hidden; }
 .cat-bar-fill { height: 100%; border-radius: 100px; transition: width 0.6s cubic-bezier(0.16,1,0.3,1); }
-.cat-bar-amount { font-size: 11px; color: var(--text2); font-family: 'DM Mono', monospace; width: 52px; text-align: right; flex-shrink: 0; }
+.cat-bar-amount { font-size: 12px; color: var(--text1); font-family: 'DM Mono', monospace; width: 60px; text-align: right; flex-shrink: 0; }
 
 /* AREA SECTION HEADER */
 .area-section-header { display: flex; align-items: center; gap: 8px; margin-bottom: 0.75rem; }
 .area-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.area-section-title { font-size: 14px; font-weight: 500; }
-.area-section-total { font-size: 12px; color: var(--text1); font-family: 'DM Mono', monospace; margin-left: auto; }
+.area-section-title { font-size: 15px; font-weight: 500; }
+.area-section-total { font-size: 13px; color: var(--text1); font-family: 'DM Mono', monospace; margin-left: auto; }
 
 /* TRANSACTIONS */
-.tx-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 0.5px solid var(--border); cursor: pointer; }
+.tx-item { display: flex; align-items: center; gap: 12px; padding: 13px 0; border-bottom: 0.5px solid var(--border); cursor: pointer; min-height: 44px; }
 .tx-item:last-child { border-bottom: none; }
 .tx-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.tx-date-col { width: 40px; flex-shrink: 0; }
+.tx-date-day { font-size: 15px; font-weight: 500; color: var(--text0); line-height: 1; }
+.tx-date-mon { font-size: 11px; color: var(--text2); font-family: 'DM Mono', monospace; margin-top: 2px; }
 .tx-main { flex: 1; min-width: 0; }
-.tx-cat { font-size: 14px; color: var(--text0); }
-.tx-meta { font-size: 12px; color: var(--text2); margin-top: 2px; }
-.tx-comment { font-size: 12px; color: var(--text1); font-style: italic; margin-top: 1px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tx-cat { font-size: 15px; color: var(--text0); }
+.tx-meta { font-size: 13px; color: var(--text2); margin-top: 2px; }
 .tx-right { text-align: right; flex-shrink: 0; }
-.tx-amount { font-size: 15px; font-family: 'DM Mono', monospace; color: var(--text0); }
-.tx-date { font-size: 11px; color: var(--text2); margin-top: 2px; font-family: 'DM Mono', monospace; }
+.tx-amount { font-size: 16px; font-family: 'DM Mono', monospace; color: var(--text0); }
 
 /* FILTER */
 .filter-row { display: flex; gap: 6px; margin-bottom: 0.75rem; }
-.filter-row select { flex: 1; background: var(--bg1); border: 0.5px solid var(--border); border-radius: 10px; color: var(--text0); font-size: 13px; padding: 8px 10px; font-family: 'DM Sans', sans-serif; appearance: none; -webkit-appearance: none; }
+.filter-row select { flex: 1; background: var(--bg1); border: 0.5px solid var(--border); border-radius: 10px; color: var(--text0); font-size: 14px; padding: 9px 10px; font-family: 'DM Sans', sans-serif; appearance: none; -webkit-appearance: none; min-height: 44px; }
 
 /* ADD FORM */
 .form-view { padding: 0 1rem; }
@@ -210,11 +212,11 @@ select.form-input option { background: #1a1a1a; }
     </div>
 
     <div class="stat-hero">
-      <div class="stat-hero-label">TOTALT DENNA PERIOD</div>
+      <div class="stat-hero-label" id="stat-hero-label">TOTALT —</div>
       <div class="stat-hero-value" id="stat-total">— <span>kr</span></div>
     </div>
 
-    <div style="padding: 0 1rem;" id="dash-content">
+    <div id="dash-content">
       <div class="loading">Laddar...</div>
     </div>
   </div>
@@ -224,7 +226,7 @@ select.form-input option { background: #1a1a1a; }
     <div class="topbar">
       <div class="topbar-title">Transaktioner</div>
     </div>
-    <div style="padding: 0.75rem 1rem 0;">
+    <div style="padding-top:0.75rem;">
       <div class="filter-row">
         <select id="filter-area">
           <option value="">Alla områden</option>
@@ -235,9 +237,7 @@ select.form-input option { background: #1a1a1a; }
         </select>
       </div>
     </div>
-    <div style="padding: 0 1rem;">
-      <div id="tx-list"><div class="loading">Laddar...</div></div>
-    </div>
+    <div id="tx-list"><div class="loading">Laddar...</div></div>
   </div>
 
   <!-- ADD -->
@@ -320,7 +320,7 @@ select.form-input option { background: #1a1a1a; }
 
 <script>
 const SUPABASE_URL = 'https://lgmiwyaxbggugjlfyuhp.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_HlN1lDzM6qZIdo56Mu8Iag_OKxyW69l';
+const SUPABASE_KEY = 'REPLACE_WITH_YOUR_NEW_ANON_KEY';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const AREAS = ['Barn','Personligt','Bil','Hushåll','Familj'];
@@ -332,7 +332,7 @@ const CATEGORIES = {
   'Familj': ['Aktiviteter','Resor','Restaurant']
 };
 const AREA_COLORS = {
-  'Barn': '#c8f060',
+  'Barn': '#53c990',
   'Personligt': '#60c8f0',
   'Bil': '#f0a060',
   'Hushåll': '#a060f0',
@@ -447,6 +447,14 @@ function renderDashboard() {
   const data = getMonthData();
   const total = data.reduce((s,r) => s + r.amount, 0);
 
+  // Update hero label with month name
+  if (selectedMonth) {
+    const [y, mo] = selectedMonth.split('-');
+    const monthName = new Date(y, mo-1).toLocaleString('sv-SE', {month:'long'});
+    document.getElementById('stat-hero-label').textContent =
+      'TOTALT ' + (monthName.charAt(0).toUpperCase() + monthName.slice(1)).toUpperCase();
+  }
+
   document.getElementById('stat-total').innerHTML = fmt(total) + ' <span>kr</span>';
 
   const container = document.getElementById('dash-content');
@@ -467,10 +475,9 @@ function renderDashboard() {
 
   let html = '';
 
-  // PIE
+  // PIE – no title
   const pieAreas = AREAS.filter(a => areaTotals[a] > 0);
   html += `<div class="card" style="margin-bottom:0.75rem;">
-    <div class="chart-title">FÖRDELNING PER OMRÅDE</div>
     <div class="pie-wrap">
       <div class="pie-canvas-wrap"><canvas id="pie-chart"></canvas></div>
       <div class="pie-legend">`;
@@ -484,27 +491,25 @@ function renderDashboard() {
   });
   html += `</div></div></div>`;
 
-  // AREA BARS
-  html += `<div class="card" style="margin-bottom:0.75rem;">
-    <div class="chart-title">BELOPP PER OMRÅDE</div>`;
+  // AREA BARS – no title, with kr
+  html += `<div class="card" style="margin-bottom:0.75rem;">`;
   AREAS.forEach(a => {
     if (areaTotals[a] === 0) return;
     const pct = maxArea > 0 ? (areaTotals[a] / maxArea * 100) : 0;
     html += `<div class="area-bar-row">
       <div class="area-bar-label">${a}</div>
       <div class="area-bar-track"><div class="area-bar-fill" style="width:${pct}%;background:${AREA_COLORS[a]}"></div></div>
-      <div class="area-bar-amount">${fmt(areaTotals[a])}</div>
+      <div class="area-bar-amount">${fmt(areaTotals[a])} kr</div>
     </div>`;
   });
   html += `</div>`;
 
-  // PER AREA CATEGORY BREAKDOWN
+  // PER AREA CATEGORY BREAKDOWN – with kr
   AREAS.forEach(a => {
     if (!catTotals[a]) return;
     const cats = catTotals[a];
     const areaTotal = areaTotals[a];
     const maxCat = Math.max(...Object.values(cats));
-    // Sort by category order defined in CATEGORIES
     const orderedCats = (CATEGORIES[a] || []).filter(c => cats[c]);
 
     html += `<div class="card" style="margin-bottom:0.75rem;">
@@ -518,7 +523,7 @@ function renderDashboard() {
       html += `<div class="cat-bar-row">
         <div class="cat-bar-label">${c}</div>
         <div class="cat-bar-track"><div class="cat-bar-fill" style="width:${pct}%;background:${AREA_COLORS[a]}88"></div></div>
-        <div class="cat-bar-amount">${fmt(cats[c])}</div>
+        <div class="cat-bar-amount">${fmt(cats[c])} kr</div>
       </div>`;
     });
     html += `</div>`;
@@ -584,17 +589,21 @@ function renderTransactions() {
     </div>`;
     groups[key].forEach((r, i) => {
       const d = new Date(r.date);
-      const dateStr = d.toLocaleDateString('sv-SE', {day:'numeric', month:'short'});
+      const day = d.toLocaleDateString('sv-SE', {day:'numeric'});
+      const mon = d.toLocaleDateString('sv-SE', {month:'short'});
       const isLast = i === groups[key].length - 1;
-      html += `<div class="tx-item" data-id="${r.id}" style="${isLast ? 'border-bottom:0.5px solid var(--border);' : ''}">
+      html += `<div class="tx-item" data-id="${r.id}" style="${isLast ? 'border-bottom:none;' : ''}">
+        <div class="tx-date-col">
+          <div class="tx-date-day">${day}</div>
+          <div class="tx-date-mon">${mon}</div>
+        </div>
         <div class="tx-dot" style="background:${AREA_COLORS[r.area]}"></div>
         <div class="tx-main">
           <div class="tx-cat">${r.category}</div>
           <div class="tx-meta">${r.area}${r.comment ? ' · ' + r.comment : ''}</div>
         </div>
         <div class="tx-right">
-          <div class="tx-amount">${fmt(r.amount)}</div>
-          <div class="tx-date">${dateStr}</div>
+          <div class="tx-amount">${fmt(r.amount)} kr</div>
         </div>
       </div>`;
     });
