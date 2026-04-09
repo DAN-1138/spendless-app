@@ -32,6 +32,19 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+.top-fade {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 430px;
+  height: 90px;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(10,10,10,1), rgba(10,10,10,0));
+  z-index: 90;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -110,7 +123,12 @@ body {
   transform: translateX(-50%);
   width: 100%;
   max-width: 430px;
-  background: rgba(10,10,10,0.98);
+  background: linear-gradient(
+    to top,
+    rgba(10,10,10,1),
+    rgba(10,10,10,0.9) 50%,
+    rgba(10,10,10,0)
+  );
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-top: 0.5px solid var(--border);
@@ -664,13 +682,12 @@ body {
 </style>
 </head>
 <body>
+<div class="top-fade"></div>
 
 <div class="content" id="content">
 
   <div class="view active" id="view-dashboard">
-    <div class="topbar">
-      <div class="topbar-title">Spendless</div>
-    </div>
+    <div class="topbar"></div>
 
     <div class="month-nav">
       <button class="month-nav-btn" id="month-prev"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -689,9 +706,7 @@ body {
   </div>
 
   <div class="view" id="view-transactions">
-    <div class="topbar">
-      <div class="topbar-title">Utgifter</div>
-    </div>
+    <div class="topbar"></div>
 
     <div style="padding-top:0.85rem;">
       <div class="filter-row">
